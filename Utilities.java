@@ -99,7 +99,7 @@ public class Utilities{
             String outStr = "Ping: ";
             Iterator<User> it = users.iterator();
             while(it.hasNext()){
-                tUser = (User)it.next();
+                tUser = it.next();
                 tNick = tUser.getNick();
                 if (!tNick.equals("ChanServ") && !tNick.equals(bot.getNick()) &&
                         !awayList.contains(tUser.getHostmask())){
@@ -120,12 +120,19 @@ public class Utilities{
         // Displays greetings to user in channel
         } else if (command.equals("hi")){
             bot.sendMessage(channel, "Hi "+user.getNick()+"!");
+        // Gives the user a cup of hot chocolate
+        } else if (command.equals("cocoa")){
+            bot.sendAction(channel, "hands " + user.getNick() +
+                                    " a cup of hot chocolate. Cheers!");
+        // Stokes the fireplace
+        } else if (command.equals("stoke")){
+            bot.sendAction(channel, "stokes the glowing ambers of the fire.");
         // Displays a list of commands
         } else if (command.equals("commands")){
-            bot.sendMessage(channel, "Commands: channels, time, uptime, away, back, ping, coin, hi, help");
+            bot.sendMessage(channel, "Commands: channels, time, uptime, cocoa, stoke, away, back, ping, coin, hi, help");
         // Displays a help message
         } else if (command.equals("help")){
-            bot.sendMessage(channel, user.getNick()+": Type .ghelp");
+            bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
         }
 	}
     
