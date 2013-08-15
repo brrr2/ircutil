@@ -28,6 +28,10 @@ import java.io.PrintWriter;
 import java.util.*;
 import org.pircbotx.*;
 
+/**
+ * A set of useful functions for an IRC bot.
+ * @author Yizhe Shen
+ */
 public class Utilities{
 	private long startTime;
     Random randGen;
