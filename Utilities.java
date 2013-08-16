@@ -34,12 +34,107 @@ import org.pircbotx.*;
  */
 public class Utilities{
 	private long startTime;
+    private ArrayList<String> awayList;
+    private ArrayList<String> adminList;
     Random randGen;
+    
 	public Utilities(){
 		startTime = System.currentTimeMillis();
         randGen = new Random();
+        awayList = loadHostmaskList("away.txt");
+        adminList = loadHostmaskList("admins.txt");
 	}
 	
+    /**
+     * Processes commands given to the the bot through PM. These commands
+     * should be accessible only by admins.
+     * 
+     * @param bot the bot that caught the command
+     * @param user the User that sent the command
+     * @param command the command
+     * @param params the command parameters
+     */
+    public void processPrivateCommand(PircBotX bot, User user, String command, String[] params){
+        // Check if the user is an admin
+        if (!isAdmin(user)){
+            bot.sendNotice(user, "You are not authorized to make this command.");
+        
+        // Join a specified channel
+        } else if (command.equals("join")){
+            // Check if we have enough parameters
+            if (params.length < 1) {
+                bot.sendNotice(user, "Missing channel parameter.");
+            } else {
+                if (!params[0].startsWith("#")){
+                    bot.joinChannel("#" + params[0]);
+                } else {
+                    bot.joinChannel(params[0]);
+                }
+            }
+            
+        // Leave a specified channel
+        } else if (command.equals("part") || command.equals("leave")){
+            // Check if we have enough parameters
+            if (params.length < 1) {
+                bot.sendNotice(user, "Missing channel parameter.");
+            } else {
+                if (bot.channelExists(params[0])){
+                    bot.partChannel(bot.getChannel(params[0]));
+                } else {
+                    bot.sendNotice(user, bot.getNick() + " is not in " + params[0] + ".");
+                }
+            }
+        
+        // Ops/Deops the specified user in the specified channel
+        } else if (command.equals("op") || command.equals("deop")){
+            // Check if we have enough parameters
+            if (params.length < 1){
+                bot.sendNotice(user, "Missing channel parameter.");
+            } else {
+                // Check if the bot is in the specified channel
+                if (!bot.channelExists(params[0])){
+                    bot.sendNotice(user, bot.getNick() + " is not in " + params[0] + ".");
+                } else {
+                    Channel channel = bot.getChannel(params[0]);
+                    // Check if the bot has Ops in that channel
+                    if (!channel.isOp(bot.getUserBot())){
+                        bot.sendNotice(user, bot.getNick()+" is not authorized to do this in " + params[0] + ".");
+                    } else {
+                        // Check if we have a specified user
+                        if (params.length > 1){
+                            if (!isUserInChannel(channel, params[1])){
+                                bot.sendNotice(user, params[1] + " is not in " + params[0] + ".");
+                            } else {
+                                User newuser = bot.getUser(params[1]);
+                                if (command.equals("op")){
+                                    bot.op(channel, newuser);
+                                } else {
+                                    bot.deOp(channel, newuser);
+                                }
+                            }
+                        } else {
+                            if (!channel.getUsers().contains(user)){
+                                bot.sendNotice(user, "You are not in " + params[0] + ".");
+                            } else {
+                                if (command.equals("op")){
+                                    bot.op(channel, user);
+                                } else {
+                                    bot.deOp(channel, user);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        
+        // Erases all hostmasks from away.txt
+        } else if (command.equals("clearaway")){
+            awayList.clear();
+            saveHostmaskList("away.txt", awayList);
+            bot.sendNotice(user, "The away list has been emptied.");
+        }
+    }
+    
 	/**
      * Process a command.
      * 
@@ -49,46 +144,9 @@ public class Utilities{
      * @param command the command
      * @param params the parameters after the command
      */
-    public void processCommand(PircBotX bot, Channel channel, User user, String command, String[] params){    	
-        // Join a specified channel
-        if (command.equals("joinchannel")){
-            if (!channel.isOp(user)){
-                bot.sendNotice(user, "You do not have Op privileges in this channel.");
-            } else {
-                if (params.length > 0){
-                    bot.joinChannel(params[0]);
-                } else {
-                    bot.sendNotice(user,"Missing channel parameter.");
-                }
-            }
-            
-        // Leave a specified channel or channel of command origin
-        } else if (command.equals("partchannel") || command.equals("leavechannel")){
-            if (!channel.isOp(user)){
-                bot.sendNotice(user, "You do not have Op privileges in this channel.");
-            } else {
-                if (bot.getChannels().size() > 1){
-                    if (params.length > 0){
-                        bot.partChannel(bot.getChannel(params[0]));
-                    } else {
-                        bot.partChannel(channel);
-                    }
-                } else {
-                    bot.sendNotice(user, bot.getNick()+" must be joined to at least 1 channel.");
-                }
-            }
-            
-        // Erases all hostmasks from away.txt
-        } else if (command.equals("clearaway")){
-            if (!channel.isOp(user)){
-                bot.sendNotice(user, "You do not have Op privileges in this channel.");
-            } else {
-                clearAwayList();
-                bot.sendNotice(user, "The away list as been emptied.");
-            }
-            
+    public void processCommand(PircBotX bot, Channel channel, User user, String command, String[] params){    	 
         // Display current host time
-        } else if (command.equals("time")){
+        if (command.equals("time")){
             bot.sendMessage(channel, "Time: " + new Date().toString());
             
         // Display bot uptime
@@ -106,15 +164,14 @@ public class Utilities{
             String outStr = "Channels: ";
             Iterator<Channel> it = channels.iterator();
             while(it.hasNext()){
-                outStr += ((Channel)it.next()).getName()+", ";
+                outStr += it.next().getName()+", ";
             }
             bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
             
         // Remove the user from the away list
         } else if (command.equals("back")){
-            ArrayList<String> awayList = getAwayList();
-            if (awayList.contains(user.getHostmask())){
-                setUserBack(awayList, user.getHostmask());
+            if (isUserAway(user)){
+                setUserBack(user);
                 bot.sendNotice(user, "You are no longer marked as away.");
             } else {
                 bot.sendNotice(user, "You are not marked as away!");
@@ -122,17 +179,16 @@ public class Utilities{
             
         // Add the user to the away list
         } else if (command.equals("away")){
-            ArrayList<String> awayList = getAwayList();
-            if (awayList.contains(user.getHostmask())){
+            if (isUserAway(user)){
                 bot.sendNotice(user, "You are already marked as away!");
             } else {
-                setUserAway(user.getHostmask());
+                setUserAway(user);
                 bot.sendNotice(user, "You are now marked as away.");
             }
             
         // Display a list of users in a channel excluding ChanServ, the bot
         } else if (command.equals("ping")){
-            ArrayList<String> awayList = getAwayList();
+            // Grab the users in the channel
             Set<User> users = bot.getUsers(channel);
             User tUser;
             String tNick;
@@ -141,7 +197,8 @@ public class Utilities{
             while(it.hasNext()){
                 tUser = it.next();
                 tNick = tUser.getNick();
-                if (!tNick.equals("ChanServ") && !tNick.equals(bot.getNick()) &&
+                if (!tNick.equalsIgnoreCase("ChanServ") && 
+                        !tNick.equalsIgnoreCase(bot.getNick()) &&
                         !awayList.contains(tUser.getHostmask())){
                     outStr += tNick+", ";
                 }
@@ -182,51 +239,75 @@ public class Utilities{
         }
 	}
     
-    // Adds a user to the away list by writing to file
-    private static void setUserAway(String hostmask){
-        try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("away.txt",true)));
-            out.println(hostmask);
-            out.close();
-        } catch (IOException e) {
-            // do nothing
+    // Checks if the user is in the channel
+    private boolean isUserInChannel(Channel channel, String nick){
+        Set<User> users = channel.getUsers();
+        Iterator<User> it = users.iterator();
+        while(it.hasNext()){
+            if (it.next().getNick().equalsIgnoreCase(nick)){
+                return true;
+            }
         }
+        return false;
     }
     
-    // Removes a user from the away list by removing entry from file
-    private static void setUserBack(ArrayList<String> awayList, String hostmask){
+    // Determines if the user is on the away list
+    private boolean isUserAway(User user){
+        return awayList.contains(user.getHostmask());
+    }
+    
+    // Adds a user to the away list
+    private void setUserAway(User user){
+        awayList.add(user.getHostmask());
+        saveHostmaskList("away.txt", awayList);
+    }
+    
+    // Removes a user from the away list
+    private void setUserBack(User user){
+        awayList.remove(user.getHostmask());
+        saveHostmaskList("away.txt", awayList);
+    }
+    
+    // Adds a user to the admin list
+    private void addAdmin(User user){
+        adminList.add(user.getHostmask());
+        saveHostmaskList("admins.txt", adminList);
+    }
+    
+    // Removes a user from the admin list
+    private void removeAdmin(User user){
+        adminList.remove(user.getHostmask());
+        saveHostmaskList("admins.txt", adminList);
+    }
+    
+    // Determines if a user is an admin
+    private boolean isAdmin (User user){
+        return adminList.contains(user.getHostmask());
+    }
+    
+    // Saves a list of hostmasks to the specified file
+    private static void saveHostmaskList(String file, ArrayList<String> hostList){
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("away.txt")));
-            awayList.remove(hostmask);
-            for (int ctr = 0; ctr < awayList.size(); ctr++){
-                out.println(awayList.get(ctr));
+            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+            for (int ctr = 0; ctr < hostList.size(); ctr++){
+                out.println(hostList.get(ctr));
             }
             out.close();
-        } catch (IOException e) {
-            // do nothing
-        }
+        } catch (IOException e){
+            // do nothing if unable to write file
+        }      
     }
     
-    // Clears the away list file of all entries
-    private static void clearAwayList(){
+    // Loads a list of hostmasks from the specified file
+    private static ArrayList<String> loadHostmaskList(String file){
         try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("away.txt")));
-            out.close();
-        } catch (IOException e) {
-            // do nothing
-        }
-    }
-    
-    // Returns the away list
-    private static ArrayList<String> getAwayList(){
-        try {
-            ArrayList<String> hostmasks = new ArrayList<String>();
-            BufferedReader in = new BufferedReader(new FileReader("away.txt"));
+            BufferedReader in = new BufferedReader(new FileReader(file));
+            ArrayList hostList = new ArrayList<String>();
             while (in.ready()) {
-                hostmasks.add(in.readLine());
+                hostList.add(in.readLine());
             }
             in.close();
-            return hostmasks;
+            return hostList;
         } catch (IOException e){
             return new ArrayList<String>(); // return empty list if unable to read file
         }      
