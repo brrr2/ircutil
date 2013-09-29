@@ -85,8 +85,9 @@ public class Utilities{
                 }
             }
         
-        // Ops/Deops the specified user in the specified channel
-        } else if (command.equals("op") || command.equals("deop")){
+        // Op/Deop/Voice/Devoice the specified user in the specified channel
+        } else if (command.equals("op") || command.equals("deop") ||
+                    command.equals("voice") || command.equals("devoice")){
             // Check if we have enough parameters
             if (params.length < 1){
                 bot.sendNotice(user, "Missing channel parameter.");
@@ -108,8 +109,12 @@ public class Utilities{
                                 User newuser = bot.getUser(params[1]);
                                 if (command.equals("op")){
                                     bot.op(channel, newuser);
-                                } else {
+                                } else if (command.equals("deop")){
                                     bot.deOp(channel, newuser);
+                                } else if (command.equals("voice")){
+                                    bot.voice(channel, newuser);
+                                } else if (command.equals("devoice")){
+                                    bot.deVoice(channel, newuser);
                                 }
                             }
                         } else {
@@ -118,8 +123,12 @@ public class Utilities{
                             } else {
                                 if (command.equals("op")){
                                     bot.op(channel, user);
-                                } else {
+                                } else if (command.equals("deop")){
                                     bot.deOp(channel, user);
+                                } else if (command.equals("voice")){
+                                    bot.voice(channel, user);
+                                } else if (command.equals("devoice")){
+                                    bot.deVoice(channel, user);
                                 }
                             }
                         }
@@ -222,8 +231,15 @@ public class Utilities{
             
         // Gives the user a cup of hot chocolate
         } else if (command.equals("cocoa")){
-            bot.sendAction(channel, "hands " + user.getNick() +
-                                    " a cup of hot chocolate. Cheers!");
+            if (params.length < 1) {
+                bot.sendAction(channel, "hands " + user.getNick() + " a cup of hot chocolate. Cheers!");
+            } else {
+                if (isUserInChannel(channel, params[0])){
+                    bot.sendAction(channel, "hands " + params[0] + " a cup of hot chocolate. Cheers!");
+                } else {
+                    bot.sendNotice(user, params[0] + " is not in this channel. :(");
+                }
+            }
             
         // Stokes the fireplace
         } else if (command.equals("stoke")){
