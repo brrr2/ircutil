@@ -1,7 +1,7 @@
 /*
-	Copyright (C) 2013 Yizhe Shen <brrr@live.ca>
-	
-	This file is part of ircutil.
+    Copyright (C) 2013 Yizhe Shen <brrr@live.ca>
+
+    This file is part of ircutil.
 
     ircutil is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,20 +33,39 @@ import org.pircbotx.*;
  * @author Yizhe Shen
  */
 public class Utilities{
-	private long startTime;
+    private long startTime;
     private ArrayList<String> awayList;
     private ArrayList<String> adminList;
     Random randGen;
     
-	public Utilities(){
-		startTime = System.currentTimeMillis();
+    public Utilities(){
+        startTime = System.currentTimeMillis();
         randGen = new Random();
         awayList = loadHostmaskList("away.txt");
         adminList = loadHostmaskList("admins.txt");
-	}
-	
+    }
+
     /**
-     * Processes commands given to the the bot through PM. These commands
+     * Processes a CTCP reply from a user.
+     * 
+     * @param bot the bot the caught the reply
+     * @param user the User that sent the reply
+     * @param msg the CTCP message
+     */
+    public void processCTCPReply(PircBotX bot, User user, String msg){
+        StringTokenizer st = new StringTokenizer(msg, "\u0020\u0001");
+        String[] params = new String[st.countTokens()];
+        for (int ctr = 0; ctr < params.length; ctr++){
+            params[ctr] = st.nextToken();
+        }
+        
+        if (params[0].equals("PING")){
+            bot.sendNotice(user, "Lag: " + formatPing((double) (System.currentTimeMillis() - Long.parseLong(params[1])) / 1000) + " seconds");
+        }
+    }
+    
+    /**
+     * Processes messages given to the the bot through PM. These commands
      * should be accessible only by admins.
      * 
      * @param bot the bot that caught the command
@@ -54,7 +73,7 @@ public class Utilities{
      * @param command the command
      * @param params the command parameters
      */
-    public void processPrivateCommand(PircBotX bot, User user, String command, String[] params){
+    public void processPrivateMsg(PircBotX bot, User user, String command, String[] params){
         // Check if the user is an admin
         if (!isAdmin(user)){
             bot.sendNotice(user, "You are not authorized to make this command.");
@@ -144,7 +163,7 @@ public class Utilities{
         }
     }
     
-	/**
+    /**
      * Process a command.
      * 
      * @param bot the bot that caught a command
@@ -160,12 +179,12 @@ public class Utilities{
             
         // Display bot uptime
         } else if (command.equals("uptime")){
-        	long d = (System.currentTimeMillis() - startTime)/1000;
-        	long seconds = d % 60;
-        	long minutes = (d / 60) % 60;
-        	long hours = (d / 3600) % 24;
-        	long days = d / 86400;
-        	bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+            long d = (System.currentTimeMillis() - startTime)/1000;
+            long seconds = d % 60;
+            long minutes = (d / 60) % 60;
+            long hours = (d / 3600) % 24;
+            long days = d / 86400;
+            bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
             
         // Display channels to which the bot is connected
         } else if (command.equals("channels")){
@@ -214,6 +233,10 @@ public class Utilities{
             }
             bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
             
+        // Display lag between the bot and user
+        } else if (command.equals("lag")){
+            bot.sendCTCPCommand(user, "PING " + System.currentTimeMillis());
+            
         // Display the results of a coin flip
         } else if (command.equals("coin")){
             int n = randGen.nextInt(2);
@@ -247,13 +270,13 @@ public class Utilities{
             
         // Displays a list of commands
         } else if (command.equals("commands")){
-            bot.sendMessage(channel, "Commands: channels, time, uptime, cocoa, stoke, away, back, ping, coin, hi, help");
+            bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, ping, coin, hi, help");
             
         // Displays a help message
         } else if (command.equals("help")){
             bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
         }
-	}
+    }
     
     // Checks if the user is in the channel
     private boolean isUserInChannel(Channel channel, String nick){
@@ -327,5 +350,9 @@ public class Utilities{
         } catch (IOException e){
             return new ArrayList<String>(); // return empty list if unable to read file
         }      
+    }
+    
+    private static String formatPing(double n){
+        return String.format("%.3f", n);
     }
 }
