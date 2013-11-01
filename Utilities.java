@@ -155,6 +155,48 @@ public class Utilities{
                 }
             }
         
+        // Add/Remove bot admins
+        } else if (command.equals("admin") || command.equals("deadmin")){
+            // Check if we have enough parameters
+            if (params.length < 1){
+                bot.sendNotice(user, "Missing channel parameter.");
+            } else {
+                // Find if the user is in any of the channels the bot is in
+                Channel channel;
+                User tUser;
+                Set<Channel> channels = bot.getChannels();
+                Set<User> users;
+                boolean found = false;
+                Iterator<Channel> it = channels.iterator();
+                Iterator<User> it2;
+                while(it.hasNext()){
+                    channel = it.next();
+                    users = channel.getUsers();
+                    it2 = users.iterator();
+                    while(it2.hasNext()){
+                        tUser = it2.next();
+                        // If we find the user, then we can add/remove them from the admin list
+                        if (tUser.getNick().equalsIgnoreCase(params[0])){
+                            found = true;
+                            if (command.equals("admin")){
+                                addAdmin(tUser);
+                            } else if (command.equalsIgnoreCase("deadmin")){
+                                removeAdmin(tUser);
+                            }
+                            break;
+                        }
+                    }
+                    if (found){
+                        break;
+                    }
+                }
+                
+                // If user is not in any channel to which the bot is joined
+                if (!found){
+                    bot.sendNotice(user, params[0] + " was not found in any of the channels to which I am joined.");
+                }
+            }
+        
         // Erases all hostmasks from away.txt
         } else if (command.equals("clearaway")){
             awayList.clear();
@@ -266,12 +308,14 @@ public class Utilities{
             
         // Stokes the fireplace
         } else if (command.equals("stoke")){
-            bot.sendAction(channel, "stokes the glowing ambers of the fire.");
+            bot.sendAction(channel, "stokes the glowing embers of the fire.");
             
         // Displays a list of commands
         } else if (command.equals("commands")){
             bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, ping, coin, hi, help");
-            
+            if (isAdmin(user)){
+                bot.sendNotice(user, "Admin Commands: join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
+            }
         // Displays a help message
         } else if (command.equals("help")){
             bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
@@ -341,7 +385,7 @@ public class Utilities{
     private static ArrayList<String> loadHostmaskList(String file){
         try {
             BufferedReader in = new BufferedReader(new FileReader(file));
-            ArrayList hostList = new ArrayList<String>();
+            ArrayList<String> hostList = new ArrayList<String>();
             while (in.ready()) {
                 hostList.add(in.readLine());
             }
