@@ -27,24 +27,73 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.*;
 import org.pircbotx.*;
+import org.pircbotx.hooks.ListenerAdapter;
+import org.pircbotx.hooks.events.MessageEvent;
+import org.pircbotx.hooks.events.NoticeEvent;
+import org.pircbotx.hooks.events.PrivateMessageEvent;
 
 /**
  * A set of useful functions for an IRC bot.
  * @author Yizhe Shen
  */
-public class Utilities{
+public class Utilities extends ListenerAdapter<PircBotX>{
+    private PircBotX bot;
+    private char commandChar;
     private long startTime;
     private ArrayList<String> awayList;
     private ArrayList<String> adminList;
     Random randGen;
     
-    public Utilities(){
+    public Utilities(PircBotX parent, char commChar){
+        bot = parent;
+        commandChar = commChar;
         startTime = System.currentTimeMillis();
         randGen = new Random();
         awayList = loadHostmaskList("away.txt");
         adminList = loadHostmaskList("admins.txt");
     }
 
+    @Override
+    public void onNotice (NoticeEvent<PircBotX> event){
+        String msg = event.getMessage();
+        
+        // Check if it's a CTCP reply
+        if (msg.startsWith("\u0001") && msg.endsWith("\u0001")){
+            processCTCPReply(bot, event.getUser(), msg);
+        }
+    }
+    
+    @Override
+    public void onMessage(MessageEvent<PircBotX> event){
+        String msg = event.getMessage();
+        
+        // Parse the message if it is a command
+        if (msg.length() > 1 && msg.charAt(0) == commandChar) {
+            msg = msg.substring(1);
+            StringTokenizer st = new StringTokenizer(msg);
+            String command = st.nextToken().toLowerCase();
+            String[] params = new String[st.countTokens()];
+            for (int ctr = 0; ctr < params.length; ctr++){
+                params[ctr] = st.nextToken();
+            }
+            processCommand(event.getChannel(), event.getUser(), command, params);
+        }
+    }
+    
+    @Override
+    public void onPrivateMessage (PrivateMessageEvent<PircBotX> event){
+        String msg = event.getMessage();
+        
+        // Parse the private message
+        StringTokenizer st = new StringTokenizer(msg);
+        String command = st.nextToken().toLowerCase();
+        String[] params = new String[st.countTokens()];
+        for (int ctr = 0; ctr < params.length; ctr++){
+            params[ctr] = st.nextToken();
+        }
+        processPM(event.getUser(), command, params);
+    }
+    
     /**
      * Processes a CTCP reply from a user.
      * 
@@ -68,12 +117,11 @@ public class Utilities{
      * Processes messages given to the the bot through PM. These commands
      * should be accessible only by admins.
      * 
-     * @param bot the bot that caught the command
      * @param user the User that sent the command
      * @param command the command
      * @param params the command parameters
      */
-    public void processPrivateMsg(PircBotX bot, User user, String command, String[] params){
+    public void processPM(User user, String command, String[] params){
         // Check if the user is an admin
         if (!isAdmin(user)){
             bot.sendNotice(user, "You are not authorized to make this command.");
@@ -208,13 +256,12 @@ public class Utilities{
     /**
      * Process a command.
      * 
-     * @param bot the bot that caught a command
      * @param channel the originating channel of the command
      * @param user the user who made the command
      * @param command the command
      * @param params the parameters after the command
      */
-    public void processCommand(PircBotX bot, Channel channel, User user, String command, String[] params){    	 
+    public void processCommand(Channel channel, User user, String command, String[] params){    	 
         // Display current host time
         if (command.equals("time")){
             bot.sendMessage(channel, "Time: " + new Date().toString());
@@ -320,7 +367,7 @@ public class Utilities{
         } else if (command.equals("help")){
             bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
         }
-    }
+    } 
     
     // Checks if the user is in the channel
     private boolean isUserInChannel(Channel channel, String nick){
