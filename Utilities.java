@@ -14,7 +14,7 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with irccasino.  If not, see <http://www.gnu.org/licenses/>.
+    along with ircutil.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 package ircutil;
@@ -68,7 +68,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         String msg = event.getMessage();
         
         // Parse the message if it is a command
-        if (msg.length() > 1 && msg.charAt(0) == commandChar) {
+        if (msg.length() > 1 && msg.charAt(0) == commandChar && msg.charAt(1) != ' ') {
             msg = msg.substring(1);
             StringTokenizer st = new StringTokenizer(msg);
             String command = st.nextToken().toLowerCase();
@@ -91,7 +91,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         for (int ctr = 0; ctr < params.length; ctr++){
             params[ctr] = st.nextToken();
         }
-        processPM(event.getUser(), command, params);
+        processPM(event.getUser(), command, params, msg);
     }
     
     /**
@@ -120,8 +120,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user the User that sent the command
      * @param command the command
      * @param params the command parameters
+     * @param origMsg the entire original message
      */
-    public void processPM(User user, String command, String[] params){
+    public void processPM(User user, String command, String[] params, String origMsg){
         // Check if the user is an admin
         if (!isAdmin(user)){
             bot.sendNotice(user, "You are not authorized to make this command.");
@@ -212,15 +213,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 // Find if the user is in any of the channels the bot is in
                 Channel channel;
                 User tUser;
-                Set<Channel> channels = bot.getChannels();
-                Set<User> users;
                 boolean found = false;
-                Iterator<Channel> it = channels.iterator();
+                Iterator<Channel> it = bot.getChannels().iterator();
                 Iterator<User> it2;
                 while(it.hasNext()){
                     channel = it.next();
-                    users = channel.getUsers();
-                    it2 = users.iterator();
+                    it2 = channel.getUsers().iterator();
                     while(it2.hasNext()){
                         tUser = it2.next();
                         // If we find the user, then we can add/remove them from the admin list
@@ -245,6 +243,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 }
             }
         
+        // Gets the bot to say a given message to a specified recipient
+        } else if (command.equals("say") || command.equals("echo")){
+            int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
+            bot.sendMessage(params[0], origMsg.substring(msgLoc));
+            
         // Erases all hostmasks from away.txt
         } else if (command.equals("clearaway")){
             awayList.clear();
@@ -277,9 +280,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         // Display channels to which the bot is connected
         } else if (command.equals("channels")){
-            Set<Channel> channels = bot.getChannels();
             String outStr = "Channels: ";
-            Iterator<Channel> it = channels.iterator();
+            Iterator<Channel> it = bot.getChannels().iterator();
             while(it.hasNext()){
                 outStr += it.next().getName()+", ";
             }
@@ -306,11 +308,10 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         // Display a list of users in a channel excluding ChanServ, the bot
         } else if (command.equals("ping")){
             // Grab the users in the channel
-            Set<User> users = bot.getUsers(channel);
             User tUser;
             String tNick;
             String outStr = "Ping: ";
-            Iterator<User> it = users.iterator();
+            Iterator<User> it = channel.getUsers().iterator();
             while(it.hasNext()){
                 tUser = it.next();
                 tNick = tUser.getNick();
@@ -329,11 +330,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         // Display the results of a coin flip
         } else if (command.equals("coin")){
             int n = randGen.nextInt(2);
-            String outStr = Colors.BOLD+user.getNick()+Colors.BOLD+" flips a coin... and it lands on ";
+            String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
             if (n == 0){
-                outStr += Colors.BOLD+"tails"+Colors.BOLD+".";
+                outStr += formatBold("tails") + ".";
             } else {
-                outStr += Colors.BOLD+"heads"+Colors.BOLD+".";
+                outStr += formatBold("heads") + ".";
             }
             bot.sendMessage(channel, outStr);
             
@@ -361,7 +362,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equals("commands")){
             bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, ping, coin, hi, help");
             if (isAdmin(user)){
-                bot.sendNotice(user, "Admin Commands: join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
+                bot.sendNotice(user, "Admin Commands: say, join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
             }
         // Displays a help message
         } else if (command.equals("help")){
@@ -371,8 +372,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     
     // Checks if the user is in the channel
     private boolean isUserInChannel(Channel channel, String nick){
-        Set<User> users = channel.getUsers();
-        Iterator<User> it = users.iterator();
+        Iterator<User> it = channel.getUsers().iterator();
         while(it.hasNext()){
             if (it.next().getNick().equalsIgnoreCase(nick)){
                 return true;
@@ -416,7 +416,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     // Saves a list of hostmasks to the specified file
-    private static void saveHostmaskList(String file, ArrayList<String> hostList){
+    private void saveHostmaskList(String file, ArrayList<String> hostList){
         try {
             PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
             for (int ctr = 0; ctr < hostList.size(); ctr++){
@@ -424,12 +424,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             }
             out.close();
         } catch (IOException e){
-            // do nothing if unable to write file
+            bot.log("Error writing to " + file + "!");
         }      
     }
     
     // Loads a list of hostmasks from the specified file
-    private static ArrayList<String> loadHostmaskList(String file){
+    private ArrayList<String> loadHostmaskList(String file){
         try {
             BufferedReader in = new BufferedReader(new FileReader(file));
             ArrayList<String> hostList = new ArrayList<String>();
@@ -443,7 +443,13 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         }      
     }
     
-    private static String formatPing(double n){
+    // Returns a decimal number formatted to 3 decimal places
+    private String formatPing(double n) {
         return String.format("%.3f", n);
+    }
+    
+    // Returns the original string with IRC bold tags
+    private String formatBold(String str) {
+        return Colors.BOLD + str + Colors.BOLD;
     }
 }
