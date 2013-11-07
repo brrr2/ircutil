@@ -245,8 +245,14 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         
         // Gets the bot to say a given message to a specified recipient
         } else if (command.equals("say") || command.equals("echo")){
+            // params[0] == recipient
             int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
             bot.sendMessage(params[0], origMsg.substring(msgLoc));
+        
+        // Gets the bot to say send a raw line
+        } else if (command.equals("raw")){
+            int msgLoc = origMsg.toLowerCase().indexOf(command) + command.length() + 1;
+            bot.sendRawLine(origMsg.substring(msgLoc));
             
         // Erases all hostmasks from away.txt
         } else if (command.equals("clearaway")){
@@ -362,7 +368,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equals("commands")){
             bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, ping, coin, hi, help");
             if (isAdmin(user)){
-                bot.sendNotice(user, "Admin Commands: say, join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
+                bot.sendNotice(user, "Admin Commands: say, raw, join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
             }
         // Displays a help message
         } else if (command.equals("help")){
