@@ -43,6 +43,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     private ArrayList<String> awayList;
     private ArrayList<String> adminList;
     private ArrayList<String> simpleList;
+    private ArrayList<CloneBot> cloneList;
     Random randGen;
     
     public Utilities(PircBotX parent, char commChar){
@@ -53,6 +54,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         awayList = loadHostList("away.txt");
         adminList = loadHostList("admins.txt");
         simpleList = loadHostList("simple.txt");
+        cloneList = new ArrayList<CloneBot>();
     }
 
     @Override
@@ -266,6 +268,31 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             simpleList.clear();
             saveHostmaskList("simple.txt", simpleList);
             bot.sendNotice(user, "The simple list has been emptied.");
+        
+        // Adds a clone to the specified channel
+        } else if (command.equals("addclone")) {
+            if (params.length > 1) {
+                CloneBot newClone = new CloneBot(params[0], params[1], "chat.freenode.net");
+                cloneList.add(newClone);
+            } else {
+                bot.sendNotice(user, "Missing parameter(s).");
+            }
+            
+        // Removes the specified clone
+        } else if (command.equals("removeclone")) {
+            if (params.length > 0) {
+                CloneBot cBot;
+                for (int ctr = 0; ctr < cloneList.size(); ctr++) {
+                    cBot = cloneList.get(ctr);
+                    if (cBot.getNick().equalsIgnoreCase(params[0])) {
+                        cBot.quitServer("Bad clone.");
+                        cloneList.remove(cBot);
+                        break;
+                    }
+                }
+            } else {
+                bot.sendNotice(user, "Missing parameter(s).");
+            }
         }
     }
     
