@@ -42,6 +42,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     private long startTime;
     private ArrayList<String> awayList;
     private ArrayList<String> adminList;
+    private ArrayList<String> simpleList;
     Random randGen;
     
     public Utilities(PircBotX parent, char commChar){
@@ -49,8 +50,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         commandChar = commChar;
         startTime = System.currentTimeMillis();
         randGen = new Random();
-        awayList = loadHostmaskList("away.txt");
-        adminList = loadHostmaskList("admins.txt");
+        awayList = loadHostList("away.txt");
+        adminList = loadHostList("admins.txt");
+        simpleList = loadHostList("simple.txt");
     }
 
     @Override
@@ -255,10 +257,15 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             bot.sendRawLine(origMsg.substring(msgLoc));
             
         // Erases all hostmasks from away.txt
-        } else if (command.equals("clearaway")){
+        } else if (command.equals("resetaway")){
             awayList.clear();
             saveHostmaskList("away.txt", awayList);
             bot.sendNotice(user, "The away list has been emptied.");
+        
+        } else if (command.equals("resetsimple")) {
+            simpleList.clear();
+            saveHostmaskList("simple.txt", simpleList);
+            bot.sendNotice(user, "The simple list has been emptied.");
         }
     }
     
@@ -296,7 +303,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         // Remove the user from the away list
         } else if (command.equals("back")){
             if (isUserAway(user)){
-                setUserBack(user);
+                toggleUserAway(user);
                 bot.sendNotice(user, "You are no longer marked as away.");
             } else {
                 bot.sendNotice(user, "You are not marked as away!");
@@ -307,9 +314,18 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             if (isUserAway(user)){
                 bot.sendNotice(user, "You are already marked as away!");
             } else {
-                setUserAway(user);
+                toggleUserAway(user);
                 bot.sendNotice(user, "You are now marked as away.");
             }
+        
+        // Toggles the user's simple status
+        } else if (command.equals("simple")) {
+            /*if (isUserSimple(user)){
+                bot.sendNotice(user, "Private messages will now be sent via msg.");
+            } else {
+                bot.sendNotice(user, "Private messages will now be sent via notice.");
+            }
+            toggleUserSimple(user);*/
             
         // Display a list of users in a channel excluding ChanServ, the bot
         } else if (command.equals("ping")){
@@ -356,7 +372,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 if (isUserInChannel(channel, params[0])){
                     bot.sendAction(channel, "hands " + params[0] + " a cup of hot chocolate. Cheers!");
                 } else {
-                    bot.sendNotice(user, params[0] + " is not in this channel. :(");
+                    bot.sendNotice(user, params[0] + " is not in " + channel.getName() + ". :(");
                 }
             }
             
@@ -366,9 +382,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         // Displays a list of commands
         } else if (command.equals("commands")){
-            bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, ping, coin, hi, help");
+            bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
             if (isAdmin(user)){
-                bot.sendNotice(user, "Admin Commands: say, raw, join, part, op, deop, voice, devoice, admin, deadmin, clearaway");
+                bot.sendNotice(user, "Admin Commands: say, raw, join, part, op, deop, voice, devoice, admin, deadmin, clearaway, clearsimple");
             }
         // Displays a help message
         } else if (command.equals("help")){
@@ -388,20 +404,30 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     // Determines if the user is on the away list
-    private boolean isUserAway(User user){
+    private boolean isUserAway(User user) {
         return awayList.contains(user.getHostmask());
     }
     
-    // Adds a user to the away list
-    private void setUserAway(User user){
-        awayList.add(user.getHostmask());
+    private void toggleUserAway(User user) {
+        if (isUserAway(user)) {
+            awayList.remove(user.getHostmask());
+        } else {
+            awayList.add(user.getHostmask());
+        }
         saveHostmaskList("away.txt", awayList);
     }
     
-    // Removes a user from the away list
-    private void setUserBack(User user){
-        awayList.remove(user.getHostmask());
-        saveHostmaskList("away.txt", awayList);
+    private boolean isUserSimple(User user) {
+        return simpleList.contains(user.getHostmask());
+    }
+    
+    private void toggleUserSimple(User user) {
+        if (isUserSimple(user)) {
+            simpleList.remove(user.getHostmask());
+        } else {
+            simpleList.add(user.getHostmask());
+        }
+        saveHostmaskList("simple.txt", simpleList);
     }
     
     // Adds a user to the admin list
@@ -435,17 +461,19 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     // Loads a list of hostmasks from the specified file
-    private ArrayList<String> loadHostmaskList(String file){
+    private ArrayList<String> loadHostList(String file){
+        ArrayList<String> hostList = new ArrayList<String>();
         try {
             BufferedReader in = new BufferedReader(new FileReader(file));
-            ArrayList<String> hostList = new ArrayList<String>();
             while (in.ready()) {
                 hostList.add(in.readLine());
             }
             in.close();
             return hostList;
         } catch (IOException e){
-            return new ArrayList<String>(); // return empty list if unable to read file
+            bot.log("Creating " + file + "...");
+            saveHostmaskList(file, hostList);
+            return hostList; // return empty list if unable to read file
         }      
     }
     
