@@ -215,14 +215,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 bot.sendNotice(user, "Missing channel parameter.");
             } else {
                 // Find if the user is in any of the channels the bot is in
-                Channel channel;
                 User tUser;
                 boolean found = false;
                 Iterator<Channel> it = bot.getChannels().iterator();
                 Iterator<User> it2;
                 while(it.hasNext()){
-                    channel = it.next();
-                    it2 = channel.getUsers().iterator();
+                    it2 = it.next().getUsers().iterator();
                     while(it2.hasNext()){
                         tUser = it2.next();
                         // If we find the user, then we can add/remove them from the admin list
@@ -285,8 +283,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 for (int ctr = 0; ctr < cloneList.size(); ctr++) {
                     cBot = cloneList.get(ctr);
                     if (cBot.getNick().equalsIgnoreCase(params[0])) {
-                        cBot.quitServer("Bad clone.");
-                        cloneList.remove(cBot);
+                        removeClone(cBot);
                         break;
                     }
                 }
@@ -411,7 +408,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equals("commands")){
             bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
             if (isAdmin(user)){
-                bot.sendNotice(user, "Admin Commands: say, raw, join, part, op, deop, voice, devoice, admin, deadmin, clearaway, clearsimple");
+                bot.sendNotice(user, "Admin Commands: say, raw, join, part, op, deop, voice, devoice, admin, deadmin, clearaway, clearsimple, addclone, removeclone");
             }
         // Displays a help message
         } else if (command.equals("help")){
@@ -502,6 +499,24 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             saveHostmaskList(file, hostList);
             return hostList; // return empty list if unable to read file
         }      
+    }
+    
+    // Disconnects the specified CloneBot
+    public void removeClone(CloneBot cBot) {
+        try {
+            cBot.quitServer("Bad clone.");
+            cloneList.remove(cBot);
+        } catch (Exception e) {
+            System.out.println("Error: " + e);
+        }
+    }
+    
+    // Disconnects all clones
+    public void removeAllClones() {
+        for (int ctr = 0; ctr < cloneList.size(); ctr++){
+            removeClone(cloneList.get(ctr));
+            ctr--;
+        }
     }
     
     // Returns a decimal number formatted to 3 decimal places
