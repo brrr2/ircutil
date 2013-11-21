@@ -19,9 +19,7 @@
 
 package ircutil;
 
-import java.io.IOException;
 import org.pircbotx.PircBotX;
-import org.pircbotx.exception.IrcException;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ConnectEvent;
 
@@ -47,7 +45,7 @@ public class CloneBot extends PircBotX {
      * @param channel the channel for the clone to join
      * @param network the IRC network for the clone to join
      */
-    public CloneBot(String nick, String channel, String network) {
+    public CloneBot(String nick, String channel) throws Exception {
         super();
         version = "CloneBot";
         cloneChannel = channel;
@@ -56,11 +54,5 @@ public class CloneBot extends PircBotX {
         setAutoNickChange(true);
         setName(nick);
         setLogin(nick);
-        
-        try {
-            connect(network);
-        } catch (IrcException | IOException e){
-            System.out.println("Error: " + e);
-        }
     }
 }
