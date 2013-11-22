@@ -216,6 +216,16 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
                 bot.sendNotice(params[0], origMsg.substring(msgLoc)); 
             }
+        
+        // Gets the bot to send an action to the specified recipient
+        } else if (command.equals("action")) {
+            if (params.length < 2) {
+                informUser(user, "Missing parameter(s).");
+            } else {
+                // params[0] == recipient
+                int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
+                bot.sendAction(params[0], origMsg.substring(msgLoc)); 
+            }
             
         // Gets the bot to send a raw line
         } else if (command.equals("raw")){
@@ -271,12 +281,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         // Display bot uptime
         } else if (command.equals("uptime")){
-            long d = (System.currentTimeMillis() - startTime)/1000;
-            long seconds = d % 60;
-            long minutes = (d / 60) % 60;
-            long hours = (d / 3600) % 24;
-            long days = d / 86400;
-            bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+            showUpTime(channel);
             
         // Display channels to which the bot is connected
         } else if (command.equals("channels")){
@@ -311,21 +316,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         // Display a list of users in a channel excluding ChanServ, the bot
         } else if (command.equals("ping")){
-            // Grab the users in the channel
-            User tUser;
-            String tNick;
-            String outStr = "Ping: ";
-            Iterator<User> it = channel.getUsers().iterator();
-            while(it.hasNext()){
-                tUser = it.next();
-                tNick = tUser.getNick();
-                if (!tNick.equalsIgnoreCase("ChanServ") && 
-                        !tNick.equalsIgnoreCase(bot.getNick()) &&
-                        !awayList.contains(tUser.getHostmask())){
-                    outStr += tNick+", ";
-                }
-            }
-            bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
+            pingUsers(channel);
             
         // Display lag between the bot and user
         } else if (command.equals("lag")){
@@ -333,14 +324,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         // Display the results of a coin flip
         } else if (command.equals("coin")){
-            int n = randGen.nextInt(2);
-            String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
-            if (n == 0){
-                outStr += formatBold("tails") + ".";
-            } else {
-                outStr += formatBold("heads") + ".";
-            }
-            bot.sendMessage(channel, outStr);
+            flipCoin(user, channel);
             
         // Displays greetings to user in channel
         } else if (command.equals("hi")){
@@ -366,15 +350,21 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equals("commands")){
             bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
             if (isAdmin(user)){
-                informUser(user, "Admin Commands: say, notice, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
+                informUser(user, "Admin Commands: say, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
             }
+            
         // Displays a help message
         } else if (command.equals("help")){
             bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
         }
     } 
     
-    // Checks if the user is in the channel
+    /**
+     * Checks if a user is in a channel.
+     * @param channel the channel to check
+     * @param nick the user's nick
+     * @return true if the user is found in the channel
+     */
     private boolean isUserInChannel(Channel channel, String nick){
         Iterator<User> it = channel.getUsers().iterator();
         while(it.hasNext()){
@@ -385,11 +375,19 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         return false;
     }
     
-    // Determines if the user is on the away list
+    /**
+     * Checks if the user is on the away list.
+     * @param user the user to check
+     * @return true if on the away list
+     */
     private boolean isUserAway(User user) {
         return awayList.contains(user.getHostmask());
     }
     
+    /**
+     * Toggles the user's away status.
+     * @param user the user to toggle
+     */
     private void toggleUserAway(User user) {
         if (isUserAway(user)) {
             awayList.remove(user.getHostmask());
@@ -399,10 +397,19 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         saveHostList("away.txt", awayList);
     }
     
+    /**
+     * Checks if the user is on the simple list.
+     * @param user the user to check
+     * @return true if on the simple list
+     */
     private boolean isUserSimple(User user) {
         return simpleList.contains(user.getHostmask());
     }
     
+    /**
+     * Toggles the user's simple status.
+     * @param user the user to toggle
+     */
     private void toggleUserSimple(User user) {
         if (isUserSimple(user)) {
             simpleList.remove(user.getHostmask());
@@ -600,7 +607,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         informUser(user, nick + " was not found!");
     }
     
-    // Determines if a user is an admin
+    /**
+     * Determines if a user is an admin for the bot.
+     * @param user the user to check
+     * @return true if the user is on the admin list
+     */
     private boolean isAdmin (User user){
         return adminList.contains(user.getHostmask());
     }
@@ -727,12 +738,71 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
     }
     
-    // Returns a decimal number formatted to 3 decimal places
+    /**
+     * Displays the amount of time since activation in dd:hh:mm:ss form.
+     * @param channel the channel to display the information
+     */
+    public void showUpTime(Channel channel) {
+        long d = (System.currentTimeMillis() - startTime)/1000;
+        long seconds = d % 60;
+        long minutes = (d / 60) % 60;
+        long hours = (d / 3600) % 24;
+        long days = d / 86400;
+        bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+    }
+    
+    /**
+     * Displays a string that highlights all the users not on the away list.
+     * @param channel the channel to display the information
+     */
+    public void pingUsers(Channel channel) {
+        // Grab the users in the channel
+        User tUser;
+        String tNick;
+        String outStr = "Ping: ";
+        Iterator<User> it = channel.getUsers().iterator();
+        while(it.hasNext()){
+            tUser = it.next();
+            tNick = tUser.getNick();
+            if (!tNick.equalsIgnoreCase("ChanServ") && 
+                    !tNick.equalsIgnoreCase(bot.getNick()) &&
+                    !awayList.contains(tUser.getHostmask())){
+                outStr += tNick+", ";
+            }
+        }
+        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
+    }
+    
+    /**
+     * Displays the flipping of a coin.
+     * @param user the command issuer
+     * @param channel the channel to display the information
+     */
+    public void flipCoin(User user, Channel channel) {
+        int n = randGen.nextInt(2);
+        String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
+        if (n == 0){
+            outStr += formatBold("tails") + ".";
+        } else {
+            outStr += formatBold("heads") + ".";
+        }
+        bot.sendMessage(channel, outStr);
+    }
+    
+    /**
+     * Returns a decimal number formatted as a String to 3 decimal places.
+     * @param n the number
+     * @return the formatted number as a String
+     */
     private String formatPing(double n) {
         return String.format("%.3f", n);
     }
     
-    // Returns the original string with IRC bold tags
+    /**
+     * Returns the original string with IRC bold tags.
+     * @param str the original string
+     * @return the original string sandwiched with bold tags
+     */
     private String formatBold(String str) {
         return Colors.BOLD + str + Colors.BOLD;
     }
