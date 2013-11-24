@@ -31,7 +31,7 @@ public class CloneBot extends PircBotX {
     public String cloneChannel;
     
      /* Listener for CloneBot initialization */
-    public static class InitClone extends ListenerAdapter<PircBotX> {
+    private class InitClone extends ListenerAdapter<PircBotX> {
         @Override
         public void onConnect(ConnectEvent<PircBotX> event){
             CloneBot bot = (CloneBot) event.getBot();
@@ -43,7 +43,7 @@ public class CloneBot extends PircBotX {
      * Creates a dummy IRC user.
      * @param nick the clone's nick
      * @param channel the channel for the clone to join
-     * @param network the IRC network for the clone to join
+     * @throws java.lang.Exception
      */
     public CloneBot(String nick, String channel) throws Exception {
         super();
