@@ -130,7 +130,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     public void processPM(User user, String command, String[] params, String origMsg){
         // Check if the user is an admin
         if (!isAdmin(user)){
-            informUser(user, "You are not authorized to make this command.");
+            // Do nothing to prevent potential spamming.
+            //informUser(user, "You are not authorized to make this command.");
         
         // Join a specified channel
         } else if (command.equals("join")){
@@ -357,6 +358,18 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equals("help")){
             bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
         }
+        
+        // Temp command
+        /*} else if (command.equals("colors")) {            
+            for (int ctr = 0; ctr < 16; ctr++) {
+                for (int ctr2 = 0; ctr2 < 16; ctr2++) {
+                    bot.sendMessage(channel, "\u0003" + String.format("%02d,%02d.48766. People: Sarah ophelia colley cannon is better remembered as ?", ctr, ctr2));
+                    try { Thread.sleep(1000); } catch (InterruptedException e){}
+                }
+                try { Thread.sleep(10000); } catch (InterruptedException e){}
+            }
+            
+        }*/
     } 
     
     /**
