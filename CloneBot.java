@@ -22,6 +22,7 @@ package ircutil;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ConnectEvent;
+import org.pircbotx.hooks.events.DisconnectEvent;
 
 /**
  * Allows the creation of dummy IRC users.
@@ -54,5 +55,46 @@ public class CloneBot extends PircBotX {
         setAutoNickChange(true);
         setName(nick);
         setLogin(nick);
+    }
+    
+    /**
+     * Patch to eliminate exceptions during shutdown of the bot by removing 
+     * channel caching any reconnecting.
+     * @param noReconnect Not used
+     */
+    @Override
+    public void shutdown(boolean noReconnect) {
+        try {
+            outputThread.interrupt();
+            inputThread.interrupt();
+        } catch (Exception e) {
+            logException(e);
+        }
+        
+        //Close the socket from here and let the threads die
+        if (!socket.isClosed())
+            try {
+                socket.shutdownInput();
+                socket.close();
+            } catch (Exception e) {
+                logException(e);
+            }
+        
+        //Close the DCC Manager
+        try {
+            dccManager.close();
+        } catch (Exception ex) {
+            //Not much we can do with it here. And throwing it would not let other things shutdown
+            logException(ex);
+        }
+        
+        //Clear relevant variables of information
+        userChanInfo.clear();
+        userNickMap.clear();
+        channelListBuilder.finish();
+        
+        //Dispatch event
+        getListenerManager().dispatchEvent(new DisconnectEvent(this));
+        log("*** Disconnected.");
     }
 }
