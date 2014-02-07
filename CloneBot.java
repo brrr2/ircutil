@@ -52,6 +52,7 @@ public class CloneBot extends PircBotX {
         cloneChannel = channel;
         InitClone init = new InitClone();
         getListenerManager().addListener(init);
+        getListenerManager().addListener(new Utilities(this, '@'));
         setAutoNickChange(true);
         setName(nick);
         setLogin(nick);
@@ -65,14 +66,14 @@ public class CloneBot extends PircBotX {
     @Override
     public void shutdown(boolean noReconnect) {
         try {
-            outputThread.interrupt();
-            inputThread.interrupt();
+            if (outputThread != null) outputThread.interrupt();
+            if (inputThread != null) inputThread.interrupt();
         } catch (Exception e) {
             logException(e);
         }
         
         //Close the socket from here and let the threads die
-        if (!socket.isClosed())
+        if (socket != null && !socket.isClosed())
             try {
                 socket.shutdownInput();
                 socket.close();

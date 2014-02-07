@@ -43,7 +43,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     private long startTime;
     private ArrayList<String> awayList;
     private ArrayList<String> adminList;
-    private ArrayList<String> simpleList;
+    private ArrayList<String> notSimpleList;
     private ArrayList<CloneBot> cloneList;
     Random randGen;
     
@@ -54,7 +54,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         randGen = new Random();
         awayList = loadHostList("away.txt");
         adminList = loadHostList("admins.txt");
-        simpleList = loadHostList("simple.txt");
+        notSimpleList = loadHostList("simple.txt");
         cloneList = new ArrayList<CloneBot>();
     }
 
@@ -241,8 +241,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         
         // Erases all hosts from simple.txt
         } else if (command.equals("resetsimple")) {
-            simpleList.clear();
-            saveHostList("simple.txt", simpleList);
+            notSimpleList.clear();
+            saveHostList("simple.txt", notSimpleList);
             informUser(user, "The simple list has been emptied.");
         
         // Adds a clone to the specified channel
@@ -415,8 +415,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user the user to check
      * @return true if on the simple list
      */
-    private boolean isUserSimple(User user) {
-        return simpleList.contains(user.getHostmask());
+    private boolean isUserNotSimple(User user) {
+        return notSimpleList.contains(user.getHostmask());
     }
     
     /**
@@ -424,12 +424,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user the user to toggle
      */
     private void toggleUserSimple(User user) {
-        if (isUserSimple(user)) {
-            simpleList.remove(user.getHostmask());
+        if (isUserNotSimple(user)) {
+            notSimpleList.remove(user.getHostmask());
         } else {
-            simpleList.add(user.getHostmask());
+            notSimpleList.add(user.getHostmask());
         }
-        saveHostList("simple.txt", simpleList);
+        saveHostList("simple.txt", notSimpleList);
     }
     
     /**
@@ -680,7 +680,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             newClone.connect(server);
             cloneList.add(newClone);
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            bot.log("Error: " + e);
             informUser(user, "Error: " + e);
         }
     }
@@ -692,9 +692,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     public void removeClone(User user, String nick) {
         try {
-            CloneBot cBot;
-            for (int ctr = 0; ctr < cloneList.size(); ctr++) {
-                cBot = cloneList.get(ctr);
+            for (CloneBot cBot : cloneList) {
                 if (cBot.getNick().equalsIgnoreCase(nick)) {
                     cBot.quitServer("Bad clone.");
                     cloneList.remove(cBot);
@@ -702,7 +700,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            bot.log("Error: " + e);
             informUser(user, "Error: " + e);
         }
     }
@@ -712,15 +710,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     public void removeAllClones(User user) {
         try {
-            CloneBot cBot;
-            for (int ctr = 0; ctr < cloneList.size(); ctr++){
-                cBot = cloneList.get(ctr);
+            for (CloneBot cBot : cloneList) {
                 cBot.quitServer("Bad clone.");
                 cloneList.remove(cBot);
-                ctr--;
             }
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            bot.log("Error: " + e);
             informUser(user, "Error: " + e);
         }
     }
@@ -731,10 +726,10 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param msg the message
      */
     public void informUser(User user, String msg) {
-        if (isUserSimple(user)) {
-            bot.sendNotice(user, msg);
-        } else {
+        if (isUserNotSimple(user)) {
             bot.sendMessage(user, msg);
+        } else {
+            bot.sendNotice(user, msg);
         }
     }
     
