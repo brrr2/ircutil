@@ -148,8 +148,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             addadmin(user, params);
         } else if (command.equals("removeadmin")) {
             removeadmin(user, params);
-        } else if (command.equals("say") || command.equals("echo")){
-            say(user, params, msg);
+        } else if (command.equals("msg") || command.equals("say")){
+            msg(user, params, msg);
         } else if (command.equals("notice")) {
             notice(user, params, msg);
         } else if (command.equals("action")) {
@@ -456,7 +456,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params
      * @param msg 
      */
-    private void say(User user, String[] params, String msg) {
+    private void msg(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
