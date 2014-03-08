@@ -37,7 +37,10 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
  * @author Yizhe Shen
  */
 public class Utilities extends ListenerAdapter<PircBotX>{
-	
+    
+    private final int PING_LIMIT = 600;
+    private long LAST_PING = 0;
+    
     private PircBotX bot;
     private char commandChar;
     private long startTime;
@@ -193,7 +196,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equalsIgnoreCase("simple")) {
             simple(user);
         } else if (command.equalsIgnoreCase("ping")){
-            ping(channel);
+            ping(channel, user);
         } else if (command.equalsIgnoreCase("lag")){
             lag(user);
         } else if (command.equalsIgnoreCase("coin")){
@@ -679,7 +682,13 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * users who are in the awayList.
      * @param user 
      */
-    private void ping(Channel channel) {
+    private void ping(Channel channel, User user) {
+        // Check for rate-limit
+        if (LAST_PING != 0 && System.currentTimeMillis() - LAST_PING < PING_LIMIT * 1000) {
+            informUser(user, "This command is rate-limited. Please wait to use it again.");
+            return;
+        }
+        
         // Grab the users in the channel
         User tUser;
         String tNick;
@@ -695,6 +704,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             }
         }
         bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
+        
+        LAST_PING = System.currentTimeMillis();
     }
     
     /**
