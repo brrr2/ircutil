@@ -125,145 +125,47 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user the User that sent the command
      * @param command the command
      * @param params the command parameters
-     * @param origMsg the entire original message
+     * @param msg the entire original message
      */
-    public void processPM(User user, String command, String[] params, String origMsg){
+    public void processPM(User user, String command, String[] params, String msg){
         // Check if the user is an admin
         if (!isAdmin(user)){
             // Do nothing to prevent potential spamming.
             //informUser(user, "You are not authorized to make this command.");
-        
-        // Join a specified channel
         } else if (command.equals("join")){
-            if (params.length < 1) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                joinChannel(user, params[0]);
-            }
-            
-        // Part a specified channel
+            join(user, params);
         } else if (command.equals("part") || command.equals("leave")){
-            if (params.length < 1) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                partChannel(user, params[0]);
-            }
-        
-        // Op the specified user in the specified channel
+            part(user, params);
         } else if (command.equals("op")){
-            if (params.length < 2){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                opUser(user, params[0], params[1]);
-            }
-            
-        // Deop the specified user in the specified channel
+            op(user, params);
         } else if (command.equals("deop")) {
-            if (params.length < 2){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                deOpUser(user, params[0], params[1]);
-            }
-            
-        // Voice the specified user in the specified channel
+            deop(user, params);
         } else if (command.equals("voice")) {
-            if (params.length < 2){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                voiceUser(user, params[0], params[1]);
-            }
-            
-        // Devoice the specified user in the specified channel
+            voice(user, params);
         } else if (command.equals("devoice")) {
-            if (params.length < 2){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                deVoiceUser(user, params[0], params[1]);
-            }
-            
-        // Adds a bot admin
+            devoice(user, params);
         } else if (command.equals("addadmin")){
-            if (params.length < 1){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                addAdmin(user, params[0]);
-            }
-        
-        // Removes a bot admin
+            addadmin(user, params);
         } else if (command.equals("removeadmin")) {
-         // Check if we have enough parameters
-            if (params.length < 1){
-                informUser(user, "Missing parameter(s).");
-            } else {
-                removeAdmin(user, params[0]);
-            }
-            
-        // Gets the bot to say a message to a specified recipient
+            removeadmin(user, params);
         } else if (command.equals("say") || command.equals("echo")){
-            if (params.length < 2) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                // params[0] == recipient
-                int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-                bot.sendMessage(params[0], origMsg.substring(msgLoc));
-            }
-        
-        // Gets the bot to notice a message to a specified recipient
+            say(user, params, msg);
         } else if (command.equals("notice")) {
-            if (params.length < 2) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                // params[0] == recipient
-                int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-                bot.sendNotice(params[0], origMsg.substring(msgLoc)); 
-            }
-        
-        // Gets the bot to send an action to the specified recipient
+            notice(user, params, msg);
         } else if (command.equals("action")) {
-            if (params.length < 2) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                // params[0] == recipient
-                int msgLoc = origMsg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-                bot.sendAction(params[0], origMsg.substring(msgLoc)); 
-            }
-            
-        // Gets the bot to send a raw line
+            action(user, params, msg);
         } else if (command.equals("raw")){
-            int msgLoc = origMsg.toLowerCase().indexOf(command) + command.length() + 1;
-            bot.sendRawLine(origMsg.substring(msgLoc));
-            
-        // Erases all hostmasks from away.txt
+            raw(user, msg);
         } else if (command.equals("resetaway")){
-            awayList.clear();
-            saveHostList("away.txt", awayList);
-            informUser(user, "The away list has been emptied.");
-        
-        // Erases all hosts from simple.txt
+            resetaway(user);
         } else if (command.equals("resetsimple")) {
-            notSimpleList.clear();
-            saveHostList("simple.txt", notSimpleList);
-            informUser(user, "The simple list has been emptied.");
-        
-        // Adds a clone to the specified channel
+            resetsimple(user);
         } else if (command.equals("addclone")) {
-            if (params.length < 3) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                addClone(user, params[0], params[1], params[2]);
-            }
-            
-        // Removes the specified clone
+            addclone(user, params);
         } else if (command.equals("removeclone")) {
-            if (params.length < 1) {
-                informUser(user, "Missing parameter(s).");
-            } else {
-                removeClone(user, params[0]);
-            }
-        
-        // Removes all clones
+            removeclone(user, params);
         } else if (command.equals("removeallclones")) {
-            removeAllClones(user);
+            removeallclones(user);
         }
     }
     
@@ -371,6 +273,255 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             
         }*/
     } 
+    
+    // Private message command methods
+    /**
+     * Joins the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void join(User user, String[] params) {
+        if (params.length < 1) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            joinChannel(user, params[0]);
+        }
+    }
+    
+    /**
+     * Parts the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void part(User user, String[] params) {
+        if (params.length < 1) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            partChannel(user, params[0]);
+        }
+    }
+    
+    /**
+     * Ops the specified user in the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void op(User user, String[] params) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            opUser(user, params[0], params[1]);
+        }
+    }
+    
+    /**
+     * DeOps the specified user in the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void deop(User user, String[] params) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            deOpUser(user, params[0], params[1]);
+        }
+    }
+    
+    /**
+     * Voices the specified user in the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void voice(User user, String[] params) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            voiceUser(user, params[0], params[1]);
+        }
+    }
+    
+    /**
+     * Devoices the specified user in the specified channel
+     * @param user
+     * @param params 
+     */
+    private void devoice(User user, String[] params) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            deVoiceUser(user, params[0], params[1]);
+        }
+    }
+    
+    /**
+     * Adds a bot admin.
+     * @param user
+     * @param params 
+     */
+    private void addadmin(User user, String[] params) {
+        if (params.length < 1){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            addAdmin(user, params[0]);
+        }
+    }
+    
+    /**
+     * Removes a bot admin.
+     * @param user
+     * @param params 
+     */
+    private void removeadmin(User user, String[] params) {
+        if (params.length < 1){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            removeAdmin(user, params[0]);
+        }
+    }
+    
+    /**
+     * Sends a message to the specified recipient.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    private void say(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            // params[0] == recipient
+            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
+            bot.sendMessage(params[0], msg.substring(msgLoc));
+        }
+    }
+    
+    /**
+     * Sends a notice to the specified recipient.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    private void notice(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            // params[0] == recipient
+            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
+            bot.sendNotice(params[0], msg.substring(msgLoc)); 
+        }
+    }
+    
+    /**
+     * Sends an action to the specified recipient.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    private void action(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            // params[0] == recipient
+            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
+            bot.sendAction(params[0], msg.substring(msgLoc)); 
+        }
+    }
+    
+    /**
+     * Sends a raw line to the server.
+     * @param user
+     * @param command
+     * @param msg 
+     */
+    private void raw(User user, String msg) {
+        int msgLoc = msg.toLowerCase().indexOf("raw") + 4;
+        bot.sendRawLine(msg.substring(msgLoc));
+    }
+    
+    /**
+     * Erases all hosts from away.txt.
+     * @param user 
+     */
+    private void resetaway(User user) {
+        awayList.clear();
+        saveHostList("away.txt", awayList);
+        informUser(user, "The away list has been emptied.");
+    }
+    
+    /**
+     * Erases all hosts from simple.txt.
+     * @param user 
+     */
+    private void resetsimple(User user) {
+        notSimpleList.clear();
+        saveHostList("simple.txt", notSimpleList);
+        informUser(user, "The simple list has been emptied.");
+    }
+    
+    /**
+     * Adds a CloneBot to the specified channel.
+     * @param user
+     * @param params 
+     */
+    private void addclone(User user, String[] params) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            try {
+                CloneBot newClone = new CloneBot(params[0], params[1]);
+                newClone.connect(bot.getServer());
+                cloneList.add(newClone);
+            } catch (Exception e) {
+                System.out.println("Error: " + e);
+                informUser(user, "Error: " + e);
+            }
+        }
+    }
+    
+    /**
+     * Removes the specified CloneBot.
+     * @param user
+     * @param params 
+     */
+    private void removeclone(User user, String[] params) {
+        if (params.length < 1) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            try {
+                CloneBot cBot;
+                for (int ctr = 0; ctr < cloneList.size(); ctr++) {
+                    cBot = cloneList.get(ctr);
+                    if (cBot.getNick().equalsIgnoreCase(params[0])) {
+                        cBot.quitServer("Bad clone.");
+                        cloneList.remove(cBot);
+                        break;
+                    }
+                }
+            } catch (Exception e) {
+                System.out.println("Error: " + e);
+                informUser(user, "Error: " + e);
+            }
+        }
+    }
+    
+    /**
+     * Disconnects all clones.
+     * @param user
+     */
+    public void removeallclones(User user) {
+        try {
+            CloneBot cBot;
+            for (int ctr = 0; ctr < cloneList.size(); ctr++){
+                cBot = cloneList.get(ctr);
+                cBot.quitServer("Bad clone.");
+                cloneList.remove(cBot);
+                ctr--;
+            }
+        } catch (Exception e) {
+            System.out.println("Error: " + e);
+            informUser(user, "Error: " + e);
+        }
+    }
     
     /**
      * Checks if a user is in a channel.
@@ -665,59 +816,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             saveHostList(file, hostList);
             return hostList; // return empty list if unable to read file
         }      
-    }
-    
-    /**
-     * Creates a clone in the specified channel via user command.
-     * @param user the user who issued the command
-     * @param nick the clone's nick
-     * @param channel the channel for the clone to join
-     * @param server the server to which the clone is to connect
-     */
-    public void addClone(User user, String nick, String channel, String server) {
-        try {
-            CloneBot newClone = new CloneBot(nick, channel);
-            newClone.connect(server);
-            cloneList.add(newClone);
-        } catch (Exception e) {
-            bot.log("Error: " + e);
-            informUser(user, "Error: " + e);
-        }
-    }
-    
-    /**
-     * Disconnects a clone via user command.
-     * @param user the user who issued the command
-     * @param nick the clone's nick
-     */
-    public void removeClone(User user, String nick) {
-        try {
-            for (CloneBot cBot : cloneList) {
-                if (cBot.getNick().equalsIgnoreCase(nick)) {
-                    cBot.quitServer("Bad clone.");
-                    cloneList.remove(cBot);
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            bot.log("Error: " + e);
-            informUser(user, "Error: " + e);
-        }
-    }
-
-    /**
-     * Disconnects all clones.
-     */
-    public void removeAllClones(User user) {
-        try {
-            for (CloneBot cBot : cloneList) {
-                cBot.quitServer("Bad clone.");
-                cloneList.remove(cBot);
-            }
-        } catch (Exception e) {
-            bot.log("Error: " + e);
-            informUser(user, "Error: " + e);
-        }
     }
     
     /**
