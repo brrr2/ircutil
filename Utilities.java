@@ -76,7 +76,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (msg.length() > 1 && msg.charAt(0) == commandChar && msg.charAt(1) != ' ') {
             msg = msg.substring(1);
             StringTokenizer st = new StringTokenizer(msg);
-            String command = st.nextToken().toLowerCase();
+            String command = st.nextToken();
             String[] params = new String[st.countTokens()];
             for (int ctr = 0; ctr < params.length; ctr++){
                 params[ctr] = st.nextToken();
@@ -91,7 +91,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         
         // Parse the private message
         StringTokenizer st = new StringTokenizer(msg);
-        String command = st.nextToken().toLowerCase();
+        String command = st.nextToken();
         String[] params = new String[st.countTokens()];
         for (int ctr = 0; ctr < params.length; ctr++){
             params[ctr] = st.nextToken();
@@ -132,40 +132,40 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (!isAdmin(user)){
             // Do nothing to prevent potential spamming.
             //informUser(user, "You are not authorized to make this command.");
-        } else if (command.equals("join")){
+        } else if (command.equalsIgnoreCase("join")){
             join(user, params);
-        } else if (command.equals("part") || command.equals("leave")){
+        } else if (command.equalsIgnoreCase("part") || command.equalsIgnoreCase("leave")){
             part(user, params);
-        } else if (command.equals("op")){
+        } else if (command.equalsIgnoreCase("op")){
             op(user, params);
-        } else if (command.equals("deop")) {
+        } else if (command.equalsIgnoreCase("deop")) {
             deop(user, params);
-        } else if (command.equals("voice")) {
+        } else if (command.equalsIgnoreCase("voice")) {
             voice(user, params);
-        } else if (command.equals("devoice")) {
+        } else if (command.equalsIgnoreCase("devoice")) {
             devoice(user, params);
-        } else if (command.equals("addadmin")){
-            addadmin(user, params);
-        } else if (command.equals("removeadmin")) {
-            removeadmin(user, params);
-        } else if (command.equals("msg") || command.equals("say")){
+        } else if (command.equalsIgnoreCase("addadmin")){
+            addAdmin(user, params);
+        } else if (command.equalsIgnoreCase("removeadmin")) {
+            removeAdmin(user, params);
+        } else if (command.equalsIgnoreCase("msg") || command.equalsIgnoreCase("say")){
             msg(user, params, msg);
-        } else if (command.equals("notice")) {
+        } else if (command.equalsIgnoreCase("notice")) {
             notice(user, params, msg);
-        } else if (command.equals("action")) {
+        } else if (command.equalsIgnoreCase("action")) {
             action(user, params, msg);
-        } else if (command.equals("raw")){
+        } else if (command.equalsIgnoreCase("raw")){
             raw(user, msg);
-        } else if (command.equals("resetaway")){
-            resetaway(user);
-        } else if (command.equals("resetsimple")) {
-            resetsimple(user);
-        } else if (command.equals("addclone")) {
-            addclone(user, params);
-        } else if (command.equals("removeclone")) {
-            removeclone(user, params);
-        } else if (command.equals("removeallclones")) {
-            removeallclones(user);
+        } else if (command.equalsIgnoreCase("resetaway")){
+            resetAway(user);
+        } else if (command.equalsIgnoreCase("resetsimple")) {
+            resetSimple(user);
+        } else if (command.equalsIgnoreCase("addclone")) {
+            addClone(user, params);
+        } else if (command.equalsIgnoreCase("removeclone")) {
+            removeClone(user, params);
+        } else if (command.equalsIgnoreCase("removeallclones")) {
+            removeAllClones(user);
         }
     }
     
@@ -178,47 +178,35 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params the parameters after the command
      */
     public void processCommand(Channel channel, User user, String command, String[] params){    	 
-        if (command.equals("time")){
+        if (command.equalsIgnoreCase("time")){
             time(channel);
-        } else if (command.equals("uptime")){
+        } else if (command.equalsIgnoreCase("uptime")){
             uptime(channel);
-        } else if (command.equals("channels")){
+        } else if (command.equalsIgnoreCase("channels")){
             channels(channel);
-        } else if (command.equals("back")){
+        } else if (command.equalsIgnoreCase("back")){
             back(user);
-        } else if (command.equals("away")){
+        } else if (command.equalsIgnoreCase("away")){
             away(user);
-        } else if (command.equals("simple")) {
+        } else if (command.equalsIgnoreCase("simple")) {
             simple(user);
-        } else if (command.equals("ping")){
+        } else if (command.equalsIgnoreCase("ping")){
             ping(channel);
-        } else if (command.equals("lag")){
+        } else if (command.equalsIgnoreCase("lag")){
             lag(user);
-        } else if (command.equals("coin")){
+        } else if (command.equalsIgnoreCase("coin")){
             coin(channel, user);
-        } else if (command.equals("hi")){
+        } else if (command.equalsIgnoreCase("hi")){
             hi(channel, user);
-        } else if (command.equals("cocoa")){
+        } else if (command.equalsIgnoreCase("cocoa")){
             cocoa(channel, user, params);
-        } else if (command.equals("stoke")){
+        } else if (command.equalsIgnoreCase("stoke")){
             stoke(channel);
-        } else if (command.equals("commands")){
+        } else if (command.equalsIgnoreCase("commands")){
             commands(channel, user);
-        } else if (command.equals("help")){
+        } else if (command.equalsIgnoreCase("help")){
             help(channel, user);
         }
-        
-        // Temp command
-        /*} else if (command.equals("colors")) {            
-            for (int ctr = 0; ctr < 16; ctr++) {
-                for (int ctr2 = 0; ctr2 < 16; ctr2++) {
-                    bot.sendMessage(channel, "\u0003" + String.format("%02d,%02d.48766. People: Sarah ophelia colley cannon is better remembered as ?", ctr, ctr2));
-                    try { Thread.sleep(1000); } catch (InterruptedException e){}
-                }
-                try { Thread.sleep(10000); } catch (InterruptedException e){}
-            }
-            
-        }*/
     } 
     
     // Private message command methods
@@ -391,7 +379,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void addadmin(User user, String[] params) {
+    private void addAdmin(User user, String[] params) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -423,7 +411,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void removeadmin(User user, String[] params) {
+    private void removeAdmin(User user, String[] params) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -460,9 +448,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
-            // params[0] == recipient
-            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-            bot.sendMessage(params[0], msg.substring(msgLoc));
+            String recip = params[0];
+            int msgLoc = msg.indexOf(recip) + recip.length() + 1;
+            bot.sendMessage(recip, msg.substring(msgLoc));
         }
     }
     
@@ -476,9 +464,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
-            // params[0] == recipient
-            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-            bot.sendNotice(params[0], msg.substring(msgLoc)); 
+            String recip = params[0];
+            int msgLoc = msg.indexOf(recip) + recip.length() + 1;
+            bot.sendNotice(recip, msg.substring(msgLoc)); 
         }
     }
     
@@ -492,28 +480,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
-            // params[0] == recipient
-            int msgLoc = msg.toLowerCase().indexOf(params[0]) + params[0].length() + 1;
-            bot.sendAction(params[0], msg.substring(msgLoc)); 
+            String recip = params[0];
+            int msgLoc = msg.indexOf(recip) + recip.length() + 1;
+            bot.sendAction(recip, msg.substring(msgLoc)); 
         }
     }
     
     /**
      * Sends a raw line to the server.
      * @param user
-     * @param command
      * @param msg 
      */
     private void raw(User user, String msg) {
-        int msgLoc = msg.toLowerCase().indexOf("raw") + 4;
-        bot.sendRawLine(msg.substring(msgLoc));
+        bot.sendRawLine(msg.substring(4));
     }
     
     /**
      * Erases all hosts from away.txt.
      * @param user 
      */
-    private void resetaway(User user) {
+    private void resetAway(User user) {
         awayList.clear();
         saveHostList("away.txt", awayList);
         informUser(user, "The away list has been emptied.");
@@ -523,7 +509,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Erases all hosts from simple.txt.
      * @param user 
      */
-    private void resetsimple(User user) {
+    private void resetSimple(User user) {
         notSimpleList.clear();
         saveHostList("simple.txt", notSimpleList);
         informUser(user, "The simple list has been emptied.");
@@ -534,12 +520,14 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void addclone(User user, String[] params) {
+    private void addClone(User user, String[] params) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
+            String nick = params[0];
+            String channel = params[1];
             try {
-                CloneBot newClone = new CloneBot(params[0], params[1]);
+                CloneBot newClone = new CloneBot(nick, channel);
                 newClone.connect(bot.getServer());
                 cloneList.add(newClone);
             } catch (Exception e) {
@@ -554,15 +542,16 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void removeclone(User user, String[] params) {
+    private void removeClone(User user, String[] params) {
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
             try {
+                String nick = params[0];
                 CloneBot cBot;
                 for (int ctr = 0; ctr < cloneList.size(); ctr++) {
                     cBot = cloneList.get(ctr);
-                    if (cBot.getNick().equalsIgnoreCase(params[0])) {
+                    if (cBot.getNick().equalsIgnoreCase(nick)) {
                         cBot.quitServer("Bad clone.");
                         cloneList.remove(cBot);
                         break;
@@ -579,7 +568,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Disconnects all clones.
      * @param user
      */
-    public void removeallclones(User user) {
+    public void removeAllClones(User user) {
         try {
             CloneBot cBot;
             for (int ctr = 0; ctr < cloneList.size(); ctr++){
@@ -738,10 +727,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 1) {
             bot.sendAction(channel, "hands " + user.getNick() + " a cup of hot chocolate. Cheers!");
         } else {
-            if (isUserInChannel(channel, params[0])){
-                bot.sendAction(channel, "hands " + params[0] + " a cup of hot chocolate. Cheers!");
+            String recip = params[0];
+            if (isUserInChannel(channel, recip)){
+                bot.sendAction(channel, "hands " + recip + " a cup of hot chocolate. Cheers!");
             } else {
-                informUser(user, params[0] + " is not in " + channel.getName() + ". :(");
+                informUser(user, recip + " is not in " + channel.getName() + ". :(");
             }
         }
     }
@@ -759,9 +749,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param channel 
      */
     private void commands(Channel channel, User user) {
-        bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
+        bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help, commands");
         if (isAdmin(user)){
-            informUser(user, "Admin Commands: say, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
+            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
         }
     }
             
