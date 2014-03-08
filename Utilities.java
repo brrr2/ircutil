@@ -166,6 +166,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             removeClone(user, params);
         } else if (command.equalsIgnoreCase("removeallclones")) {
             removeAllClones(user);
+        } else if (command.equalsIgnoreCase("listclones")) {
+            listClones(user);
         }
     }
     
@@ -531,7 +533,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 newClone.connect(bot.getServer());
                 cloneList.add(newClone);
             } catch (Exception e) {
-                System.out.println("Error: " + e);
+                bot.log("Error: " + e);
                 informUser(user, "Error: " + e);
             }
         }
@@ -548,9 +550,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             try {
                 String nick = params[0];
-                CloneBot cBot;
-                for (int ctr = 0; ctr < cloneList.size(); ctr++) {
-                    cBot = cloneList.get(ctr);
+                for (CloneBot cBot : cloneList) {
                     if (cBot.getNick().equalsIgnoreCase(nick)) {
                         cBot.quitServer("Bad clone.");
                         cloneList.remove(cBot);
@@ -558,7 +558,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                     }
                 }
             } catch (Exception e) {
-                System.out.println("Error: " + e);
+                bot.log("Error: " + e);
                 informUser(user, "Error: " + e);
             }
         }
@@ -570,16 +570,29 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     public void removeAllClones(User user) {
         try {
-            CloneBot cBot;
-            for (int ctr = 0; ctr < cloneList.size(); ctr++){
-                cBot = cloneList.get(ctr);
+            for (CloneBot cBot : cloneList) {
                 cBot.quitServer("Bad clone.");
-                cloneList.remove(cBot);
-                ctr--;
             }
+            cloneList.clear();
         } catch (Exception e) {
-            System.out.println("Error: " + e);
+            bot.log("Error: " + e);
             informUser(user, "Error: " + e);
+        }
+    }
+    
+    /**
+     * Lists the CloneBots currently running.
+     * @param user 
+     */
+    private void listClones(User user) {
+        if (cloneList.isEmpty()) {
+            informUser(user, "No clones to list.");
+        } else {
+            String outStr = String.format("Clones (%d): ", cloneList.size());
+            for (CloneBot cBot : cloneList) {
+                outStr += cBot.getNick() + ", ";
+            }
+            informUser(user, outStr.substring(0, outStr.length()-2));
         }
     }
     
