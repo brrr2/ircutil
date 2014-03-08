@@ -170,7 +170,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     /**
-     * Process a command.
+     * Process an in-channel command.
      * 
      * @param channel the originating channel of the command
      * @param user the user who made the command
@@ -178,87 +178,34 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params the parameters after the command
      */
     public void processCommand(Channel channel, User user, String command, String[] params){    	 
-        // Display current host time
         if (command.equals("time")){
-            bot.sendMessage(channel, "Time: " + new Date().toString());
-            
-        // Display bot uptime
+            time(channel);
         } else if (command.equals("uptime")){
-            showUpTime(channel);
-            
-        // Display channels to which the bot is connected
+            uptime(channel);
         } else if (command.equals("channels")){
-            showChannels(channel);
-            
-        // Remove the user from the away list
+            channels(channel);
         } else if (command.equals("back")){
-            if (isUserAway(user)){
-                toggleUserAway(user);
-                informUser(user, "You are no longer marked as away.");
-            } else {
-                informUser(user, "You are not marked as away!");
-            }
-            
-        // Add the user to the away list
+            back(user);
         } else if (command.equals("away")){
-            if (isUserAway(user)){
-                informUser(user, "You are already marked as away!");
-            } else {
-                toggleUserAway(user);
-                informUser(user, "You are now marked as away.");
-            }
-        
-        // Toggles the user's simple status
+            away(user);
         } else if (command.equals("simple")) {
-            /*if (isUserSimple(user)){
-                bot.sendNotice(user, "Private messages will now be sent via msg.");
-            } else {
-                bot.sendNotice(user, "Private messages will now be sent via notice.");
-            }*/
-            toggleUserSimple(user);
-            
-        // Display a list of users in a channel excluding ChanServ, the bot
+            simple(user);
         } else if (command.equals("ping")){
-            pingUsers(channel);
-            
-        // Display lag between the bot and user
+            ping(channel);
         } else if (command.equals("lag")){
-            bot.sendCTCPCommand(user, "PING " + System.currentTimeMillis());
-            
-        // Display the results of a coin flip
+            lag(user);
         } else if (command.equals("coin")){
-            flipCoin(user, channel);
-            
-        // Displays greetings to user in channel
+            coin(channel, user);
         } else if (command.equals("hi")){
-            bot.sendMessage(channel, "Hi " + user.getNick() + "!");
-            
-        // Gives the user a cup of hot chocolate
+            hi(channel, user);
         } else if (command.equals("cocoa")){
-            if (params.length < 1) {
-                bot.sendAction(channel, "hands " + user.getNick() + " a cup of hot chocolate. Cheers!");
-            } else {
-                if (isUserInChannel(channel, params[0])){
-                    bot.sendAction(channel, "hands " + params[0] + " a cup of hot chocolate. Cheers!");
-                } else {
-                    informUser(user, params[0] + " is not in " + channel.getName() + ". :(");
-                }
-            }
-            
-        // Stokes the fireplace
+            cocoa(channel, user, params);
         } else if (command.equals("stoke")){
-            bot.sendAction(channel, "stokes the glowing embers of the fire.");
-            
-        // Displays a list of commands
+            stoke(channel);
         } else if (command.equals("commands")){
-            bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
-            if (isAdmin(user)){
-                informUser(user, "Admin Commands: say, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
-            }
-            
-        // Displays a help message
+            commands(channel, user);
         } else if (command.equals("help")){
-            bot.sendMessage(channel, user.getNick()+": Read the topic. For a list of non-game commands, type .commands.");
+            help(channel, user);
         }
         
         // Temp command
@@ -523,6 +470,187 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         }
     }
     
+    // In-channel command methods
+    /**
+     * Displays current host time.
+     * @param channel 
+     */
+    private void time(Channel channel) {
+        bot.sendMessage(channel, "Time: " + new Date().toString());
+    }
+    
+    /**
+     * Displays the amount of time since activation in dd:hh:mm:ss form.
+     * @param channel 
+     */
+    private void uptime(Channel channel) {
+        long d = (System.currentTimeMillis() - startTime)/1000;
+        long seconds = d % 60;
+        long minutes = (d / 60) % 60;
+        long hours = (d / 3600) % 24;
+        long days = d / 86400;
+        bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
+    }    
+    
+    /**
+     * Displays channels to which the bot is connected.
+     * @param channel 
+     */
+    private void channels(Channel channel) {
+        String outStr = "Channels: ";
+        Iterator<Channel> it = bot.getChannels().iterator();
+        while(it.hasNext()){
+            outStr += it.next().getName() + ", ";
+        }
+        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
+    }
+    
+    /**
+     * Removes the user from the away list.
+     * @param user 
+     */
+    private void back(User user) {
+        if (isUserAway(user)){
+            toggleUserAway(user);
+            informUser(user, "You are no longer marked as away.");
+        } else {
+            informUser(user, "You are not marked as away!");
+        }
+    }
+            
+    /**
+     * Adds the user to the away list.
+     * @param user 
+     */
+    private void away(User user) {
+        if (isUserAway(user)){
+            informUser(user, "You are already marked as away!");
+        } else {
+            toggleUserAway(user);
+            informUser(user, "You are now marked as away.");
+        }
+    }
+        
+    /**
+     * Toggles the user's simple status.
+     * @param user 
+     */
+    private void simple(User user) {
+        /*if (isUserSimple(user)){
+            bot.sendNotice(user, "Private messages will now be sent via msg.");
+        } else {
+            bot.sendNotice(user, "Private messages will now be sent via notice.");
+        }*/
+        if (isUserNotSimple(user)) {
+            notSimpleList.remove(user.getHostmask());
+        } else {
+            notSimpleList.add(user.getHostmask());
+        }
+        saveHostList("simple.txt", notSimpleList);
+    }
+    
+    /**
+     * Displays a list of users in a channel excluding ChanServ, the bot and
+     * users who are in the awayList.
+     * @param user 
+     */
+    private void ping(Channel channel) {
+        // Grab the users in the channel
+        User tUser;
+        String tNick;
+        String outStr = "Ping: ";
+        Iterator<User> it = channel.getUsers().iterator();
+        while(it.hasNext()){
+            tUser = it.next();
+            tNick = tUser.getNick();
+            if (!tNick.equalsIgnoreCase("ChanServ") && 
+                    !tNick.equalsIgnoreCase(bot.getNick()) &&
+                    !awayList.contains(tUser.getHostmask())){
+                outStr += tNick+", ";
+            }
+        }
+        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
+    }
+    
+    /**
+     * Sends a CTCP PING to the user.
+     * @param user 
+     */
+    private void lag(User user) {
+        bot.sendCTCPCommand(user, "PING " + System.currentTimeMillis());
+    }
+    
+    /**
+     * Displays the results of a coin flip.
+     * @param user
+     * @param channel 
+     */
+    private void coin(Channel channel, User user) {
+        int n = randGen.nextInt(2);
+        String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
+        if (n == 0){
+            outStr += formatBold("tails") + ".";
+        } else {
+            outStr += formatBold("heads") + ".";
+        }
+        bot.sendMessage(channel, outStr);
+    }
+    
+    /**
+     * Displays greetings to user in channel.
+     * @param user
+     * @param channel 
+     */
+    private void hi(Channel channel, User user) {
+        bot.sendMessage(channel, "Hi " + user.getNick() + "!");
+    }
+    
+    /**
+     * Hands out cups of hot chocolate.
+     * @param user
+     * @param channel
+     * @param params 
+     */
+    private void cocoa(Channel channel, User user, String[] params) {
+        if (params.length < 1) {
+            bot.sendAction(channel, "hands " + user.getNick() + " a cup of hot chocolate. Cheers!");
+        } else {
+            if (isUserInChannel(channel, params[0])){
+                bot.sendAction(channel, "hands " + params[0] + " a cup of hot chocolate. Cheers!");
+            } else {
+                informUser(user, params[0] + " is not in " + channel.getName() + ". :(");
+            }
+        }
+    }
+    
+    /**
+     * Stokes the fire.
+     * @param channel 
+     */
+    private void stoke(Channel channel) {
+        bot.sendAction(channel, "stokes the glowing embers of the fire.");
+    }
+    
+    /**
+     * Displays a list of commands available in this module.
+     * @param channel 
+     */
+    private void commands(Channel channel, User user) {
+        bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help");
+        if (isAdmin(user)){
+            informUser(user, "Admin Commands: say, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
+        }
+    }
+            
+    /**
+     * Displays a help message.
+     * @param channel
+     * @param user 
+     */
+    private void help(Channel channel, User user) {
+        bot.sendMessage(channel, user.getNick() + ": Please read the topic.");
+    }
+    
     /**
      * Checks if a user is in a channel.
      * @param channel the channel to check
@@ -568,19 +696,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     private boolean isUserNotSimple(User user) {
         return notSimpleList.contains(user.getHostmask());
-    }
-    
-    /**
-     * Toggles the user's simple status.
-     * @param user the user to toggle
-     */
-    private void toggleUserSimple(User user) {
-        if (isUserNotSimple(user)) {
-            notSimpleList.remove(user.getHostmask());
-        } else {
-            notSimpleList.add(user.getHostmask());
-        }
-        saveHostList("simple.txt", notSimpleList);
     }
     
     /**
@@ -829,70 +944,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             bot.sendNotice(user, msg);
         }
-    }
-    
-    /**
-     * Displays the channels the bot is connected to.
-     * @param channel the channel to send the message
-     */
-    public void showChannels(Channel channel) {
-        String outStr = "Channels: ";
-        Iterator<Channel> it = bot.getChannels().iterator();
-        while(it.hasNext()){
-            outStr += it.next().getName() + ", ";
-        }
-        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
-    }
-    
-    /**
-     * Displays the amount of time since activation in dd:hh:mm:ss form.
-     * @param channel the channel to display the information
-     */
-    public void showUpTime(Channel channel) {
-        long d = (System.currentTimeMillis() - startTime)/1000;
-        long seconds = d % 60;
-        long minutes = (d / 60) % 60;
-        long hours = (d / 3600) % 24;
-        long days = d / 86400;
-        bot.sendMessage(channel, "Uptime: "+String.format("%02d:%02d:%02d:%02d", days, hours, minutes, seconds));
-    }
-    
-    /**
-     * Displays a string that highlights all the users not on the away list.
-     * @param channel the channel to display the information
-     */
-    public void pingUsers(Channel channel) {
-        // Grab the users in the channel
-        User tUser;
-        String tNick;
-        String outStr = "Ping: ";
-        Iterator<User> it = channel.getUsers().iterator();
-        while(it.hasNext()){
-            tUser = it.next();
-            tNick = tUser.getNick();
-            if (!tNick.equalsIgnoreCase("ChanServ") && 
-                    !tNick.equalsIgnoreCase(bot.getNick()) &&
-                    !awayList.contains(tUser.getHostmask())){
-                outStr += tNick+", ";
-            }
-        }
-        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
-    }
-    
-    /**
-     * Displays the flipping of a coin.
-     * @param user the command issuer
-     * @param channel the channel to display the information
-     */
-    public void flipCoin(User user, Channel channel) {
-        int n = randGen.nextInt(2);
-        String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
-        if (n == 0){
-            outStr += formatBold("tails") + ".";
-        } else {
-            outStr += formatBold("heads") + ".";
-        }
-        bot.sendMessage(channel, outStr);
     }
     
     /**
