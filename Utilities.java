@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2013 Yizhe Shen <brrr@live.ca>
+    Copyright (C) 2013-2014 Yizhe Shen <brrr@live.ca>
 
     This file is part of ircutil.
 
@@ -231,7 +231,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
-            joinChannel(user, params[0]);
+            String channel = params[0];
+            if (!channel.startsWith("#")){
+                bot.joinChannel("#" + channel);
+            } else {
+                bot.joinChannel(channel);
+            }
         }
     }
     
@@ -244,7 +249,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
-            partChannel(user, params[0]);
+            String channel = params[0];
+            if (bot.channelExists(channel)){
+                bot.partChannel(bot.getChannel(channel));
+            } else {
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            }
         }
     }
     
@@ -257,7 +267,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            opUser(user, params[0], params[1]);
+            String channel = params[0];
+            String nick = params[1];
+            // Check if the bot is in the specified channel
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else {
+                Channel tChannel = bot.getChannel(channel);
+                // Check if the bot has Ops in that channel
+                if (!tChannel.isOp(bot.getUserBot())){
+                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+                } else {
+                    // Check if the user to Op is in the channel
+                    if (!isUserInChannel(tChannel, nick)){
+                        informUser(user, nick + " is not in " + channel + ".");
+                    } else {
+                        User tUser = bot.getUser(nick);
+                        bot.op(tChannel, tUser);
+                    }
+                }
+            }
         }
     }
     
@@ -270,7 +299,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            deOpUser(user, params[0], params[1]);
+            String channel = params[0];
+            String nick = params[1];
+            // Check if the bot is in the specified channel
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else {
+                Channel tChannel = bot.getChannel(channel);
+                // Check if the bot has Ops in that channel
+                if (!tChannel.isOp(bot.getUserBot())){
+                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+                } else {
+                    // Check if the user to Op is in the channel
+                    if (!isUserInChannel(tChannel, nick)){
+                        informUser(user, nick + " is not in " + channel + ".");
+                    } else {
+                        User tUser = bot.getUser(nick);
+                        bot.deOp(tChannel, tUser);
+                    }
+                }
+            }
         }
     }
     
@@ -283,7 +331,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            voiceUser(user, params[0], params[1]);
+            String channel = params[0];
+            String nick = params[1];
+            // Check if the bot is in the specified channel
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else {
+                Channel tChannel = bot.getChannel(channel);
+                // Check if the bot has Ops in that channel
+                if (!tChannel.isOp(bot.getUserBot())){
+                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+                } else {
+                    // Check if the user to Op is in the channel
+                    if (!isUserInChannel(tChannel, nick)){
+                        informUser(user, nick + " is not in " + channel + ".");
+                    } else {
+                        User tUser = bot.getUser(nick);
+                        bot.voice(tChannel, tUser);
+                    }
+                }
+            }
         }
     }
     
@@ -296,7 +363,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            deVoiceUser(user, params[0], params[1]);
+            String channel = params[0];
+            String nick = params[1];
+            // Check if the bot is in the specified channel
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else {
+                Channel tChannel = bot.getChannel(channel);
+                // Check if the bot has Ops in that channel
+                if (!tChannel.isOp(bot.getUserBot())){
+                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+                } else {
+                    // Check if the user to Op is in the channel
+                    if (!isUserInChannel(tChannel, nick)){
+                        informUser(user, nick + " is not in " + channel + ".");
+                    } else {
+                        User tUser = bot.getUser(nick);
+                        bot.deVoice(tChannel, tUser);
+                    }
+                }
+            }
         }
     }
     
@@ -309,7 +395,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
-            addAdmin(user, params[0]);
+            String nick = params[0];
+            // Find if user to add is in any of the channels the bot is in
+            User tUser;
+            Iterator<Channel> it = bot.getChannels().iterator();
+            Iterator<User> it2;
+            while(it.hasNext()){
+                it2 = it.next().getUsers().iterator();
+                while(it2.hasNext()){
+                    tUser = it2.next();
+                    // If we find the user, we can add them to the admin list
+                    if (tUser.getNick().equalsIgnoreCase(nick)){
+                        adminList.add(tUser.getHostmask());
+                        saveHostList("admins.txt", adminList);
+                        return;
+                    }
+                }
+            }
+
+            // If user is not in any channel to which the bot is joined
+            informUser(user, nick + " was not found!");
         }
     }
     
@@ -322,7 +427,26 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
-            removeAdmin(user, params[0]);
+            String nick = params[0];
+            // Find if user to remove is in any of the channels the bot is in
+            User tUser;
+            Iterator<Channel> it = bot.getChannels().iterator();
+            Iterator<User> it2;
+            while(it.hasNext()){
+                it2 = it.next().getUsers().iterator();
+                while(it2.hasNext()){
+                    tUser = it2.next();
+                    // If we find the user, we can remove them from the admin list
+                    if (tUser.getNick().equalsIgnoreCase(nick)){
+                        adminList.remove(tUser.getHostmask());
+                        saveHostList("admins.txt", adminList);
+                        return;
+                    }
+                }
+            }
+
+            // If user is not in any channel to which the bot is joined
+            informUser(user, nick + " was not found!");
         }
     }
     
@@ -511,7 +635,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     private void back(User user) {
         if (isUserAway(user)){
-            toggleUserAway(user);
+            awayList.remove(user.getHostmask());
+            saveHostList("away.txt", awayList);
             informUser(user, "You are no longer marked as away.");
         } else {
             informUser(user, "You are not marked as away!");
@@ -523,10 +648,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user 
      */
     private void away(User user) {
-        if (isUserAway(user)){
+        if (isUserAway(user)) {
             informUser(user, "You are already marked as away!");
         } else {
-            toggleUserAway(user);
+            awayList.add(user.getHostmask());
+            saveHostList("away.txt", awayList);
             informUser(user, "You are now marked as away.");
         }
     }
@@ -536,15 +662,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user 
      */
     private void simple(User user) {
-        /*if (isUserSimple(user)){
-            bot.sendNotice(user, "Private messages will now be sent via msg.");
-        } else {
-            bot.sendNotice(user, "Private messages will now be sent via notice.");
-        }*/
         if (isUserNotSimple(user)) {
             notSimpleList.remove(user.getHostmask());
+            //informUser(user, "Private messages will now be sent via notice.");
         } else {
             notSimpleList.add(user.getHostmask());
+            //informUser(user, "Private messages will now be sent via msg.");
         }
         saveHostList("simple.txt", notSimpleList);
     }
@@ -651,6 +774,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         bot.sendMessage(channel, user.getNick() + ": Please read the topic.");
     }
     
+    // Helper methods
     /**
      * Checks if a user is in a channel.
      * @param channel the channel to check
@@ -677,213 +801,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     /**
-     * Toggles the user's away status.
-     * @param user the user to toggle
-     */
-    private void toggleUserAway(User user) {
-        if (isUserAway(user)) {
-            awayList.remove(user.getHostmask());
-        } else {
-            awayList.add(user.getHostmask());
-        }
-        saveHostList("away.txt", awayList);
-    }
-    
-    /**
      * Checks if the user is on the simple list.
      * @param user the user to check
      * @return true if on the simple list
      */
     private boolean isUserNotSimple(User user) {
         return notSimpleList.contains(user.getHostmask());
-    }
-    
-    /**
-     * Gets the bot to join the specified channel.
-     * @param user the command issuer
-     * @param channel the channel to join
-     */
-    private void joinChannel(User user, String channel) {
-        if (!channel.startsWith("#")){
-            bot.joinChannel("#" + channel);
-        } else {
-            bot.joinChannel(channel);
-        }
-    }
-    
-    /**
-     * Gets the bot to part the specified channel.
-     * @param user the command issuer
-     * @param channel the channel to part
-     */
-    private void partChannel(User user, String channel) {
-        if (bot.channelExists(channel)){
-            bot.partChannel(bot.getChannel(channel));
-        } else {
-            informUser(user, bot.getNick() + " is not in " + channel + ".");
-        }
-    }
-    
-    /**
-     * Gives Op to a user.
-     * @param user the command issuer
-     * @param channel the channel in which to give Op
-     * @param nick the user to Op
-     */
-    private void opUser(User user, String channel, String nick) {
-        // Check if the bot is in the specified channel
-        if (!bot.channelExists(channel)){
-            informUser(user, bot.getNick() + " is not in " + channel + ".");
-        } else {
-            Channel tChannel = bot.getChannel(channel);
-            // Check if the bot has Ops in that channel
-            if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                // Check if the user to Op is in the channel
-                if (!isUserInChannel(tChannel, nick)){
-                    informUser(user, nick + " is not in " + channel + ".");
-                } else {
-                    User tUser = bot.getUser(nick);
-                    bot.op(tChannel, tUser);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Removes Op from a user.
-     * @param user the command issuer
-     * @param channel the channel in which to remove Op
-     * @param nick the user to deOp
-     */
-    private void deOpUser(User user, String channel, String nick) {
-        // Check if the bot is in the specified channel
-        if (!bot.channelExists(channel)){
-            informUser(user, bot.getNick() + " is not in " + channel + ".");
-        } else {
-            Channel tChannel = bot.getChannel(channel);
-            // Check if the bot has Ops in that channel
-            if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                // Check if the user to Op is in the channel
-                if (!isUserInChannel(tChannel, nick)){
-                    informUser(user, nick + " is not in " + channel + ".");
-                } else {
-                    User tUser = bot.getUser(nick);
-                    bot.deOp(tChannel, tUser);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Gives voice to a user.
-     * @param user the command issuer
-     * @param channel the channel in which to give voice
-     * @param nick the user to voice
-     */
-    private void voiceUser(User user, String channel, String nick) {
-        // Check if the bot is in the specified channel
-        if (!bot.channelExists(channel)){
-            informUser(user, bot.getNick() + " is not in " + channel + ".");
-        } else {
-            Channel tChannel = bot.getChannel(channel);
-            // Check if the bot has Ops in that channel
-            if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                // Check if the user to Op is in the channel
-                if (!isUserInChannel(tChannel, nick)){
-                    informUser(user, nick + " is not in " + channel + ".");
-                } else {
-                    User tUser = bot.getUser(nick);
-                    bot.voice(tChannel, tUser);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Removes voice from a user.
-     * @param user the command issuer
-     * @param channel the channel in which to remove voice
-     * @param nick the user to deVoice
-     */
-    private void deVoiceUser(User user, String channel, String nick) {
-        // Check if the bot is in the specified channel
-        if (!bot.channelExists(channel)){
-            informUser(user, bot.getNick() + " is not in " + channel + ".");
-        } else {
-            Channel tChannel = bot.getChannel(channel);
-            // Check if the bot has Ops in that channel
-            if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                // Check if the user to Op is in the channel
-                if (!isUserInChannel(tChannel, nick)){
-                    informUser(user, nick + " is not in " + channel + ".");
-                } else {
-                    User tUser = bot.getUser(nick);
-                    bot.deVoice(tChannel, tUser);
-                }
-            }
-        }
-    }
-    
-    /**
-     * Adds a host to the admin list.
-     * @param user the command issuer
-     * @param nick the user to add
-     */
-    private void addAdmin(User user, String nick){
-        // Find if user to add is in any of the channels the bot is in
-        User tUser;
-        Iterator<Channel> it = bot.getChannels().iterator();
-        Iterator<User> it2;
-        while(it.hasNext()){
-            it2 = it.next().getUsers().iterator();
-            while(it2.hasNext()){
-                tUser = it2.next();
-                // If we find the user, we can add them to the admin list
-                if (tUser.getNick().equalsIgnoreCase(nick)){
-                    adminList.add(tUser.getHostmask());
-                    saveHostList("admins.txt", adminList);
-                    return;
-                }
-            }
-        }
-        
-        // If user is not in any channel to which the bot is joined
-        informUser(user, nick + " was not found!");
-    }
-    
-    /**
-     * Removes a host from the admin list.
-     * @param user the command issuer
-     * @param nick the user to remove
-     */
-    private void removeAdmin(User user, String nick){
-        // Find if user to remove is in any of the channels the bot is in
-        User tUser;
-        Iterator<Channel> it = bot.getChannels().iterator();
-        Iterator<User> it2;
-        while(it.hasNext()){
-            it2 = it.next().getUsers().iterator();
-            while(it2.hasNext()){
-                tUser = it2.next();
-                // If we find the user, we can remove them from the admin list
-                if (tUser.getNick().equalsIgnoreCase(nick)){
-                    adminList.remove(tUser.getHostmask());
-                    saveHostList("admins.txt", adminList);
-                    return;
-                }
-            }
-        }
-        
-        // If user is not in any channel to which the bot is joined
-        informUser(user, nick + " was not found!");
     }
     
     /**
