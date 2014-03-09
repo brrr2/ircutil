@@ -151,6 +151,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             addAdmin(user, params);
         } else if (command.equalsIgnoreCase("removeadmin")) {
             removeAdmin(user, params);
+        } else if (command.equalsIgnoreCase("listadmins")) {
+            listAdmins(user);
         } else if (command.equalsIgnoreCase("msg") || command.equalsIgnoreCase("say")){
             msg(user, params, msg);
         } else if (command.equalsIgnoreCase("notice")) {
@@ -440,6 +442,22 @@ public class Utilities extends ListenerAdapter<PircBotX>{
 
             // If user is not in any channel to which the bot is joined
             informUser(user, nick + " was not found!");
+        }
+    }
+    
+    /**
+     * Lists the current bot admins.
+     * @param user 
+     */
+    private void listAdmins(User user) {
+        if (adminList.isEmpty()) {
+            informUser(user, "No admins to list.");
+        } else {
+            String outStr = String.format("Admins (%d): ", adminList.size());
+            for (String admin : adminList) {
+                outStr += admin + ", ";
+            }
+            informUser(user, outStr.substring(0, outStr.length()-2));
         }
     }
     
@@ -775,7 +793,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     private void commands(Channel channel, User user) {
         bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help, commands");
         if (isAdmin(user)){
-            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, admin, removeadmin, clearaway, clearsimple, addclone, removeclone, removeallclones");
+            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, addadmin, removeadmin, listadmins, resetaway, resetsimple, addclone, removeclone, removeallclones, listclones");
         }
     }
             
