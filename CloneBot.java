@@ -33,7 +33,7 @@ public class CloneBot extends PircBotX {
     public String cloneChannels;
     
      /* Listener for CloneBot initialization */
-    private class InitClone extends ListenerAdapter<CloneBot> {
+    public static class InitClone extends ListenerAdapter<CloneBot> {
         @Override
         public void onConnect(ConnectEvent<CloneBot> event){
             CloneBot bot = event.getBot();

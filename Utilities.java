@@ -222,7 +222,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void join(User user, String[] params, String msg) {
+    public void join(User user, String[] params, String msg) {
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -240,7 +240,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void part(User user, String[] params, String msg) {
+    public void part(User user, String[] params, String msg) {
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -258,7 +258,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void op(User user, String[] params, String msg) {
+    public void op(User user, String[] params, String msg) {
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -290,7 +290,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void deop(User user, String[] params, String msg) {
+    public void deop(User user, String[] params, String msg) {
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -322,7 +322,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void voice(User user, String[] params, String msg) {
+    public void voice(User user, String[] params, String msg) {
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -354,7 +354,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void devoice(User user, String[] params, String msg) {
+    public void devoice(User user, String[] params, String msg) {
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -386,7 +386,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void addAdmin(User user, String[] params, String msg) {
+    public void addAdmin(User user, String[] params, String msg) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -418,7 +418,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void removeAdmin(User user, String[] params, String msg) {
+    public void removeAdmin(User user, String[] params, String msg) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -449,7 +449,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Lists the current bot admins.
      * @param user 
      */
-    private void listAdmins(User user, String[] params, String msg) {
+    public void listAdmins(User user, String[] params, String msg) {
         if (adminList.isEmpty()) {
             informUser(user, "No admins to list.");
         } else {
@@ -467,7 +467,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params
      * @param msg 
      */
-    private void msg(User user, String[] params, String msg) {
+    public void msg(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -483,7 +483,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params
      * @param msg 
      */
-    private void notice(User user, String[] params, String msg) {
+    public void notice(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -499,7 +499,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param params
      * @param msg 
      */
-    private void action(User user, String[] params, String msg) {
+    public void action(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -514,7 +514,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param msg 
      */
-    private void raw(User user, String[] params, String msg) {
+    public void raw(User user, String[] params, String msg) {
         bot.sendRawLine(msg.substring(4));
     }
     
@@ -522,7 +522,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Erases all hosts from away.txt.
      * @param user 
      */
-    private void resetAway(User user, String[] params, String msg) {
+    public void resetAway(User user, String[] params, String msg) {
         awayList.clear();
         saveHostList("away.txt", awayList);
         informUser(user, "The away list has been emptied.");
@@ -532,7 +532,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Erases all hosts from simple.txt.
      * @param user 
      */
-    private void resetSimple(User user, String[] params, String msg) {
+    public void resetSimple(User user, String[] params, String msg) {
         notSimpleList.clear();
         saveHostList("simple.txt", notSimpleList);
         informUser(user, "The simple list has been emptied.");
@@ -543,7 +543,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void addClone(User user, String[] params, String msg) {
+    public void addClone(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -565,7 +565,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    private void removeClone(User user, String[] params, String msg) {
+    public void removeClone(User user, String[] params, String msg) {
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -605,7 +605,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Lists the CloneBots currently running.
      * @param user 
      */
-    private void listClones(User user, String[] params, String msg) {
+    public void listClones(User user, String[] params, String msg) {
         if (cloneList.isEmpty()) {
             informUser(user, "No clones to list.");
         } else {
@@ -622,7 +622,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Displays current host time.
      * @param channel 
      */
-    private void time(Channel channel, User user, String[] params, String msg) {
+    public void time(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, "Time: " + new Date().toString());
     }
     
@@ -630,7 +630,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Displays the amount of time since activation in dd:hh:mm:ss form.
      * @param channel 
      */
-    private void uptime(Channel channel, User user, String[] params, String msg) {
+    public void uptime(Channel channel, User user, String[] params, String msg) {
         long d = (System.currentTimeMillis() - startTime)/1000;
         long seconds = d % 60;
         long minutes = (d / 60) % 60;
@@ -643,7 +643,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Displays channels to which the bot is connected.
      * @param channel 
      */
-    private void channels(Channel channel, User user, String[] params, String msg) {
+    public void channels(Channel channel, User user, String[] params, String msg) {
         String outStr = "Channels: ";
         Iterator<Channel> it = bot.getChannels().iterator();
         while(it.hasNext()){
@@ -656,7 +656,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Removes the user from the away list.
      * @param user 
      */
-    private void back(Channel channel, User user, String[] params, String msg) {
+    public void back(Channel channel, User user, String[] params, String msg) {
         if (isUserAway(user)){
             awayList.remove(user.getHostmask());
             saveHostList("away.txt", awayList);
@@ -670,7 +670,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Adds the user to the away list.
      * @param user 
      */
-    private void away(Channel channel, User user, String[] params, String msg) {
+    public void away(Channel channel, User user, String[] params, String msg) {
         if (isUserAway(user)) {
             informUser(user, "You are already marked as away!");
         } else {
@@ -684,7 +684,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Toggles the user's simple status.
      * @param user 
      */
-    private void simple(Channel channel, User user, String[] params, String msg) {
+    public void simple(Channel channel, User user, String[] params, String msg) {
         if (isUserNotSimple(user)) {
             notSimpleList.remove(user.getHostmask());
             //informUser(user, "Private messages will now be sent via notice.");
@@ -700,7 +700,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * users who are in the awayList.
      * @param user 
      */
-    private void ping(Channel channel, User user, String[] params, String msg) {
+    public void ping(Channel channel, User user, String[] params, String msg) {
         // Check for rate-limit
         if (LAST_PING != 0 && System.currentTimeMillis() - LAST_PING < PING_LIMIT * 1000) {
             informUser(user, "This command is rate-limited. Please wait to use it again.");
@@ -730,7 +730,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Sends a CTCP PING to the user.
      * @param user 
      */
-    private void lag(Channel channel, User user, String[] params, String msg) {
+    public void lag(Channel channel, User user, String[] params, String msg) {
         bot.sendCTCPCommand(user, "PING " + System.currentTimeMillis());
     }
     
@@ -739,7 +739,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param channel 
      */
-    private void coin(Channel channel, User user, String[] params, String msg) {
+    public void coin(Channel channel, User user, String[] params, String msg) {
         int n = randGen.nextInt(2);
         String outStr = formatBold(user.getNick()) + " flips a coin... and it lands on ";
         if (n == 0){
@@ -755,7 +755,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param channel 
      */
-    private void hi(Channel channel, User user, String[] params, String msg) {
+    public void hi(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, "Hi " + user.getNick() + "!");
     }
     
@@ -765,7 +765,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param channel
      * @param params 
      */
-    private void cocoa(Channel channel, User user, String[] params, String msg) {
+    public void cocoa(Channel channel, User user, String[] params, String msg) {
         if (params.length < 1) {
             bot.sendAction(channel, "hands " + user.getNick() + " a cup of hot chocolate. Cheers!");
         } else {
@@ -782,7 +782,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Stokes the fire.
      * @param channel 
      */
-    private void stoke(Channel channel, User user, String[] params, String msg) {
+    public void stoke(Channel channel, User user, String[] params, String msg) {
         bot.sendAction(channel, "stokes the glowing embers of the fire.");
     }
     
@@ -790,7 +790,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Displays a list of commands available in this module.
      * @param channel 
      */
-    private void commands(Channel channel, User user, String[] params, String msg) {
+    public void commands(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help, commands");
         if (isAdmin(user)){
             informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, addadmin, removeadmin, listadmins, resetaway, resetsimple, addclone, removeclone, removeallclones, listclones");
@@ -802,7 +802,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param channel
      * @param user 
      */
-    private void help(Channel channel, User user, String[] params, String msg) {
+    public void help(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, user.getNick() + ": Please read the topic.");
     }
     
@@ -893,7 +893,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user the target
      * @param msg the message
      */
-    public void informUser(User user, String msg) {
+    private void informUser(User user, String msg) {
         if (isUserNotSimple(user)) {
             bot.sendMessage(user, msg);
         } else {
