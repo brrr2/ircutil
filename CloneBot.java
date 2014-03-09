@@ -19,6 +19,7 @@
 
 package ircutil;
 
+import java.util.StringTokenizer;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.ListenerAdapter;
 import org.pircbotx.hooks.events.ConnectEvent;
@@ -29,29 +30,31 @@ import org.pircbotx.hooks.events.DisconnectEvent;
  * @author Yizhe Shen
  */
 public class CloneBot extends PircBotX {
-    public String cloneChannel;
+    public String cloneChannels;
     
      /* Listener for CloneBot initialization */
-    private class InitClone extends ListenerAdapter<PircBotX> {
+    private class InitClone extends ListenerAdapter<CloneBot> {
         @Override
-        public void onConnect(ConnectEvent<PircBotX> event){
-            CloneBot bot = (CloneBot) event.getBot();
-            bot.joinChannel(bot.cloneChannel);
+        public void onConnect(ConnectEvent<CloneBot> event){
+            CloneBot bot = event.getBot();
+            StringTokenizer st = new StringTokenizer(bot.cloneChannels, ",");
+            while(st.hasMoreTokens()) {
+                bot.joinChannel(st.nextToken());
+            }            
         }
     }
     
     /**
      * Creates a dummy IRC user.
      * @param nick the clone's nick
-     * @param channel the channel for the clone to join
+     * @param channels the channel for the clone to join
      * @throws java.lang.Exception
      */
-    public CloneBot(String nick, String channel) throws Exception {
+    public CloneBot(String nick, String channels) throws Exception {
         super();
         version = "CloneBot";
-        cloneChannel = channel;
-        InitClone init = new InitClone();
-        getListenerManager().addListener(init);
+        cloneChannels = channels;
+        getListenerManager().addListener(new InitClone());
         getListenerManager().addListener(new Utilities(this, '@'));
         setAutoNickChange(true);
         setName(nick);
