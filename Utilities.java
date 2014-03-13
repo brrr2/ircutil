@@ -147,12 +147,18 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             voice(user, params, msg);
         } else if (command.equalsIgnoreCase("devoice")) {
             devoice(user, params, msg);
+        } else if (command.equalsIgnoreCase("kick")) {
+            kick(user, params, msg);
+        } else if (command.equalsIgnoreCase("ban")) {
+            ban(user, params, msg);
+        } else if (command.equalsIgnoreCase("unban")) {
+            unban(user, params, msg);
         } else if (command.equalsIgnoreCase("addadmin")){
-            addAdmin(user, params, msg);
+            addadmin(user, params, msg);
         } else if (command.equalsIgnoreCase("removeadmin")) {
-            removeAdmin(user, params, msg);
+            removeadmin(user, params, msg);
         } else if (command.equalsIgnoreCase("listadmins")) {
-            listAdmins(user, params, msg);
+            listadmins(user, params, msg);
         } else if (command.equalsIgnoreCase("msg") || command.equalsIgnoreCase("say")){
             msg(user, params, msg);
         } else if (command.equalsIgnoreCase("notice")) {
@@ -162,17 +168,17 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else if (command.equalsIgnoreCase("raw")){
             raw(user, params, msg);
         } else if (command.equalsIgnoreCase("resetaway")){
-            resetAway(user, params, msg);
+            resetaway(user, params, msg);
         } else if (command.equalsIgnoreCase("resetsimple")) {
-            resetSimple(user, params, msg);
+            resetsimple(user, params, msg);
         } else if (command.equalsIgnoreCase("addclone")) {
-            addClone(user, params, msg);
+            addclone(user, params, msg);
         } else if (command.equalsIgnoreCase("removeclone")) {
-            removeClone(user, params, msg);
+            removeclone(user, params, msg);
         } else if (command.equalsIgnoreCase("removeallclones")) {
-            removeAllClones(user, params, msg);
+            removeallclones(user, params, msg);
         } else if (command.equalsIgnoreCase("listclones")) {
-            listClones(user, params, msg);
+            listclones(user, params, msg);
         }
     }
     
@@ -216,7 +222,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         }
     } 
     
-    // Private message command methods
+    /////////////////////////////////////////
+    //// Private message command methods ////
+    /////////////////////////////////////////
     /**
      * Joins the specified channel.
      * @param user
@@ -264,23 +272,17 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String channel = params[0];
             String nick = params[1];
-            // Check if the bot is in the specified channel
+            Channel tChannel = bot.getChannel(channel);
+            User tUser = bot.getUser(nick);
+            
             if (!bot.channelExists(channel)){
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else if (!isUserInChannel(tChannel, nick)){
+                informUser(user, nick + " is not in " + channel + ".");
             } else {
-                Channel tChannel = bot.getChannel(channel);
-                // Check if the bot has Ops in that channel
-                if (!tChannel.isOp(bot.getUserBot())){
-                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-                } else {
-                    // Check if the user to Op is in the channel
-                    if (!isUserInChannel(tChannel, nick)){
-                        informUser(user, nick + " is not in " + channel + ".");
-                    } else {
-                        User tUser = bot.getUser(nick);
-                        bot.op(tChannel, tUser);
-                    }
-                }
+                bot.op(tChannel, tUser);
             }
         }
     }
@@ -296,23 +298,17 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String channel = params[0];
             String nick = params[1];
-            // Check if the bot is in the specified channel
+            Channel tChannel = bot.getChannel(channel);
+            User tUser = bot.getUser(nick);
+            
             if (!bot.channelExists(channel)){
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else if (!isUserInChannel(tChannel, nick)){
+                informUser(user, nick + " is not in " + channel + ".");
             } else {
-                Channel tChannel = bot.getChannel(channel);
-                // Check if the bot has Ops in that channel
-                if (!tChannel.isOp(bot.getUserBot())){
-                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-                } else {
-                    // Check if the user to Op is in the channel
-                    if (!isUserInChannel(tChannel, nick)){
-                        informUser(user, nick + " is not in " + channel + ".");
-                    } else {
-                        User tUser = bot.getUser(nick);
-                        bot.deOp(tChannel, tUser);
-                    }
-                }
+                bot.deOp(tChannel, tUser);
             }
         }
     }
@@ -328,23 +324,17 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String channel = params[0];
             String nick = params[1];
-            // Check if the bot is in the specified channel
+            Channel tChannel = bot.getChannel(channel);
+            User tUser = bot.getUser(nick);
+            
             if (!bot.channelExists(channel)){
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else if (!isUserInChannel(tChannel, nick)){
+                informUser(user, nick + " is not in " + channel + ".");
             } else {
-                Channel tChannel = bot.getChannel(channel);
-                // Check if the bot has Ops in that channel
-                if (!tChannel.isOp(bot.getUserBot())){
-                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-                } else {
-                    // Check if the user to Op is in the channel
-                    if (!isUserInChannel(tChannel, nick)){
-                        informUser(user, nick + " is not in " + channel + ".");
-                    } else {
-                        User tUser = bot.getUser(nick);
-                        bot.voice(tChannel, tUser);
-                    }
-                }
+                bot.voice(tChannel, tUser);
             }
         }
     }
@@ -360,23 +350,96 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String channel = params[0];
             String nick = params[1];
-            // Check if the bot is in the specified channel
+            Channel tChannel = bot.getChannel(channel);
+            User tUser = bot.getUser(nick);
+            
             if (!bot.channelExists(channel)){
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else if (!isUserInChannel(tChannel, nick)){
+                informUser(user, nick + " is not in " + channel + ".");
             } else {
-                Channel tChannel = bot.getChannel(channel);
-                // Check if the bot has Ops in that channel
-                if (!tChannel.isOp(bot.getUserBot())){
-                    informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-                } else {
-                    // Check if the user to Op is in the channel
-                    if (!isUserInChannel(tChannel, nick)){
-                        informUser(user, nick + " is not in " + channel + ".");
-                    } else {
-                        User tUser = bot.getUser(nick);
-                        bot.deVoice(tChannel, tUser);
-                    }
-                }
+                bot.deVoice(tChannel, tUser);
+            }
+        }
+    }
+    
+    /**
+     * Kicks the specified user from the specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void kick(User user, String[] params, String msg) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            String channel = params[0];
+            String nick = params[1];
+            Channel tChannel = bot.getChannel(channel);
+            User tUser = bot.getUser(nick);
+            String kickMsg = "";
+            if (params.length > 2) {
+                kickMsg = msg.substring(msg.indexOf(nick) + nick.length() + 1);
+            }
+            
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else if (!isUserInChannel(tChannel, nick)){
+                informUser(user, nick + " is not in " + channel + ".");
+            } else {
+                bot.kick(tChannel, tUser, kickMsg);
+            }
+        }
+    }
+    
+    /**
+     * Bans the specified user from the specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void ban(User user, String[] params, String msg) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            String channel = params[0];
+            String hostmask = params[1];
+            Channel tChannel = bot.getChannel(channel);
+            
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else {
+                bot.ban(tChannel, hostmask);
+            }
+        }
+    }
+    
+    /**
+     * Unbans the specified user in the specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void unban(User user, String[] params, String msg) {
+        if (params.length < 2){
+            informUser(user, "Missing parameter(s).");
+        } else {
+            String channel = params[0];
+            String hostmask = params[1];
+            Channel tChannel = bot.getChannel(channel);
+            
+            if (!bot.channelExists(channel)){
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())){
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else {
+                bot.unBan(tChannel, hostmask);
             }
         }
     }
@@ -386,7 +449,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    public void addAdmin(User user, String[] params, String msg) {
+    public void addadmin(User user, String[] params, String msg) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -418,7 +481,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    public void removeAdmin(User user, String[] params, String msg) {
+    public void removeadmin(User user, String[] params, String msg) {
         if (params.length < 1){
             informUser(user, "Missing parameter(s).");
         } else {
@@ -449,7 +512,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Lists the current bot admins.
      * @param user 
      */
-    public void listAdmins(User user, String[] params, String msg) {
+    public void listadmins(User user, String[] params, String msg) {
         if (adminList.isEmpty()) {
             informUser(user, "No admins to list.");
         } else {
@@ -522,7 +585,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Erases all hosts from away.txt.
      * @param user 
      */
-    public void resetAway(User user, String[] params, String msg) {
+    public void resetaway(User user, String[] params, String msg) {
         awayList.clear();
         saveHostList("away.txt", awayList);
         informUser(user, "The away list has been emptied.");
@@ -532,7 +595,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Erases all hosts from simple.txt.
      * @param user 
      */
-    public void resetSimple(User user, String[] params, String msg) {
+    public void resetsimple(User user, String[] params, String msg) {
         notSimpleList.clear();
         saveHostList("simple.txt", notSimpleList);
         informUser(user, "The simple list has been emptied.");
@@ -543,7 +606,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    public void addClone(User user, String[] params, String msg) {
+    public void addclone(User user, String[] params, String msg) {
         if (params.length < 2) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -565,7 +628,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param user
      * @param params 
      */
-    public void removeClone(User user, String[] params, String msg) {
+    public void removeclone(User user, String[] params, String msg) {
         if (params.length < 1) {
             informUser(user, "Missing parameter(s).");
         } else {
@@ -589,7 +652,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Disconnects all clones.
      * @param user
      */
-    public void removeAllClones(User user, String[] params, String msg) {
+    public void removeallclones(User user, String[] params, String msg) {
         try {
             for (CloneBot cBot : cloneList) {
                 cBot.quitServer("Bad clone.");
@@ -605,7 +668,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * Lists the CloneBots currently running.
      * @param user 
      */
-    public void listClones(User user, String[] params, String msg) {
+    public void listclones(User user, String[] params, String msg) {
         if (cloneList.isEmpty()) {
             informUser(user, "No clones to list.");
         } else {
@@ -617,7 +680,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         }
     }
     
-    // In-channel command methods
+    ////////////////////////////////////
+    //// In-channel command methods ////
+    ////////////////////////////////////
     /**
      * Displays current host time.
      * @param channel 
@@ -806,7 +871,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         bot.sendMessage(channel, user.getNick() + ": Please read the topic.");
     }
     
-    // Helper methods
+    ////////////////////////
+    //// Helper methods ////
+    ////////////////////////
     /**
      * Checks if a user is in a channel.
      * @param channel the channel to check
