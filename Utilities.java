@@ -167,6 +167,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             action(user, params, msg);
         } else if (command.equalsIgnoreCase("raw")){
             raw(user, params, msg);
+        } else if (command.equalsIgnoreCase("nick")) {
+            nick(user, params, msg);
         } else if (command.equalsIgnoreCase("resetaway")){
             resetaway(user, params, msg);
         } else if (command.equalsIgnoreCase("resetsimple")) {
@@ -579,6 +581,21 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     public void raw(User user, String[] params, String msg) {
         bot.sendRawLine(msg.substring(4));
+    }
+    
+    /**
+     * Changes the nick of the bot.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void nick(User user, String[] params, String msg) {
+        if (params.length < 1) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            String newNick = params[0];
+            bot.changeNick(newNick);
+        }
     }
     
     /**
