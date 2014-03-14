@@ -38,15 +38,10 @@ import org.pircbotx.hooks.events.PrivateMessageEvent;
  */
 public class Utilities extends ListenerAdapter<PircBotX>{
     
-    private final int PING_LIMIT = 600;
-    private long LAST_PING = 0;
-    
     private PircBotX bot;
     private char commandChar;
     private long startTime;
-    private ArrayList<String> awayList;
     private ArrayList<String> adminList;
-    private ArrayList<String> notSimpleList;
     private ArrayList<CloneBot> cloneList;
     Random randGen;
     
@@ -55,9 +50,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         commandChar = commChar;
         startTime = System.currentTimeMillis();
         randGen = new Random();
-        awayList = loadHostList("away.txt");
         adminList = loadHostList("admins.txt");
-        notSimpleList = loadHostList("simple.txt");
         cloneList = new ArrayList<CloneBot>();
     }
 
@@ -169,10 +162,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             raw(user, params, msg);
         } else if (command.equalsIgnoreCase("nick")) {
             nick(user, params, msg);
-        } else if (command.equalsIgnoreCase("resetaway")){
-            resetaway(user, params, msg);
-        } else if (command.equalsIgnoreCase("resetsimple")) {
-            resetsimple(user, params, msg);
         } else if (command.equalsIgnoreCase("addclone")) {
             addclone(user, params, msg);
         } else if (command.equalsIgnoreCase("removeclone")) {
@@ -199,14 +188,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             uptime(channel, user, params, msg);
         } else if (command.equalsIgnoreCase("channels")){
             channels(channel, user, params, msg);
-        } else if (command.equalsIgnoreCase("back")){
-            back(channel, user, params, msg);
-        } else if (command.equalsIgnoreCase("away")){
-            away(channel, user, params, msg);
-        } else if (command.equalsIgnoreCase("simple")) {
-            simple(channel, user, params, msg);
-        } else if (command.equalsIgnoreCase("ping")){
-            ping(channel, user, params, msg);
         } else if (command.equalsIgnoreCase("lag")){
             lag(channel, user, params, msg);
         } else if (command.equalsIgnoreCase("coin")){
@@ -599,26 +580,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     /**
-     * Erases all hosts from away.txt.
-     * @param user 
-     */
-    public void resetaway(User user, String[] params, String msg) {
-        awayList.clear();
-        saveHostList("away.txt", awayList);
-        informUser(user, "The away list has been emptied.");
-    }
-    
-    /**
-     * Erases all hosts from simple.txt.
-     * @param user 
-     */
-    public void resetsimple(User user, String[] params, String msg) {
-        notSimpleList.clear();
-        saveHostList("simple.txt", notSimpleList);
-        informUser(user, "The simple list has been emptied.");
-    }
-    
-    /**
      * Adds a CloneBot to the specified channel.
      * @param user
      * @param params 
@@ -735,80 +696,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     /**
-     * Removes the user from the away list.
-     * @param user 
-     */
-    public void back(Channel channel, User user, String[] params, String msg) {
-        if (isUserAway(user)){
-            awayList.remove(user.getHostmask());
-            saveHostList("away.txt", awayList);
-            informUser(user, "You are no longer marked as away.");
-        } else {
-            informUser(user, "You are not marked as away!");
-        }
-    }
-            
-    /**
-     * Adds the user to the away list.
-     * @param user 
-     */
-    public void away(Channel channel, User user, String[] params, String msg) {
-        if (isUserAway(user)) {
-            informUser(user, "You are already marked as away!");
-        } else {
-            awayList.add(user.getHostmask());
-            saveHostList("away.txt", awayList);
-            informUser(user, "You are now marked as away.");
-        }
-    }
-        
-    /**
-     * Toggles the user's simple status.
-     * @param user 
-     */
-    public void simple(Channel channel, User user, String[] params, String msg) {
-        if (isUserNotSimple(user)) {
-            notSimpleList.remove(user.getHostmask());
-            //informUser(user, "Private messages will now be sent via notice.");
-        } else {
-            notSimpleList.add(user.getHostmask());
-            //informUser(user, "Private messages will now be sent via msg.");
-        }
-        saveHostList("simple.txt", notSimpleList);
-    }
-    
-    /**
-     * Displays a list of users in a channel excluding ChanServ, the bot and
-     * users who are in the awayList.
-     * @param user 
-     */
-    public void ping(Channel channel, User user, String[] params, String msg) {
-        // Check for rate-limit
-        if (LAST_PING != 0 && System.currentTimeMillis() - LAST_PING < PING_LIMIT * 1000) {
-            informUser(user, "This command is rate-limited. Please wait to use it again.");
-            return;
-        }
-        
-        // Grab the users in the channel
-        User tUser;
-        String tNick;
-        String outStr = "Ping: ";
-        Iterator<User> it = channel.getUsers().iterator();
-        while(it.hasNext()){
-            tUser = it.next();
-            tNick = tUser.getNick();
-            if (!tNick.equalsIgnoreCase("ChanServ") && 
-                    !tNick.equalsIgnoreCase(bot.getNick()) &&
-                    !awayList.contains(tUser.getHostmask())){
-                outStr += tNick+", ";
-            }
-        }
-        bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
-        
-        LAST_PING = System.currentTimeMillis();
-    }
-    
-    /**
      * Sends a CTCP PING to the user.
      * @param user 
      */
@@ -873,9 +760,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param channel 
      */
     public void commands(Channel channel, User user, String[] params, String msg) {
-        bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, away, back, simple, ping, coin, hi, help, commands");
+        bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, coin, hi, help, commands");
         if (isAdmin(user)){
-            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, addadmin, removeadmin, listadmins, resetaway, resetsimple, addclone, removeclone, removeallclones, listclones");
+            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, kick, ban, unban, nick, addadmin, removeadmin, listadmins, addclone, removeclone, removeallclones, listclones");
         }
     }
             
@@ -905,24 +792,6 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             }
         }
         return false;
-    }
-    
-    /**
-     * Checks if the user is on the away list.
-     * @param user the user to check
-     * @return true if on the away list
-     */
-    private boolean isUserAway(User user) {
-        return awayList.contains(user.getHostmask());
-    }
-    
-    /**
-     * Checks if the user is on the simple list.
-     * @param user the user to check
-     * @return true if on the simple list
-     */
-    private boolean isUserNotSimple(User user) {
-        return notSimpleList.contains(user.getHostmask());
     }
     
     /**
@@ -973,16 +842,12 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     }
     
     /**
-     * Sends a private message to the target user.
+     * Sends a notice to the target user.
      * @param user the target
      * @param msg the message
      */
     private void informUser(User user, String msg) {
-        if (isUserNotSimple(user)) {
-            bot.sendMessage(user, msg);
-        } else {
-            bot.sendNotice(user, msg);
-        }
+        bot.sendNotice(user, msg);
     }
     
     /**
