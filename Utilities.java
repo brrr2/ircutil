@@ -879,12 +879,10 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @param hostList ArrayList of hosts
      */
     private void saveHostList(String file, ArrayList<String> hostList){
-        try {
-            PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)));
+        try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(file)))) {
             for (int ctr = 0; ctr < hostList.size(); ctr++){
                 out.println(hostList.get(ctr));
             }
-            out.close();
         } catch (IOException e){
             bot.log("Error writing to " + file + "!");
         }      
@@ -897,18 +895,15 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     private ArrayList<String> loadHostList(String file){
         ArrayList<String> hostList = new ArrayList<>();
-        try {
-            BufferedReader in = new BufferedReader(new FileReader(file));
+        try (BufferedReader in = new BufferedReader(new FileReader(file))) {
             while (in.ready()) {
                 hostList.add(in.readLine());
             }
-            in.close();
-            return hostList;
         } catch (IOException e){
             bot.log("Creating " + file + "...");
             saveHostList(file, hostList);
-            return hostList; // return empty list if unable to read file
-        }      
+        }
+        return hostList; // return empty list if unable to read file
     }
     
     /**
