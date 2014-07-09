@@ -146,6 +146,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             ban(user, params, msg);
         } else if (command.equalsIgnoreCase("unban")) {
             unban(user, params, msg);
+        } else if (command.equalsIgnoreCase("mode")) {
+            mode(user, params, msg);
         } else if (command.equalsIgnoreCase("addadmin")){
             addadmin(user, params, msg);
         } else if (command.equalsIgnoreCase("removeadmin")) {
@@ -262,7 +264,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             Channel tChannel = bot.getChannel(channel);
             User tUser = bot.getUser(nick);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -289,7 +291,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             Channel tChannel = bot.getChannel(channel);
             User tUser = bot.getUser(nick);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -316,7 +318,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             Channel tChannel = bot.getChannel(channel);
             User tUser = bot.getUser(nick);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -343,7 +345,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             Channel tChannel = bot.getChannel(channel);
             User tUser = bot.getUser(nick);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -374,7 +376,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
                 kickMsg = msg.substring(msg.indexOf(nick) + nick.length() + 1);
             }
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -400,7 +402,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             String hostmask = params[1];
             Channel tChannel = bot.getChannel(channel);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
@@ -424,12 +426,36 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             String hostmask = params[1];
             Channel tChannel = bot.getChannel(channel);
             
-            if (!bot.channelExists(channel)){
+            if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())){
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
             } else {
                 bot.unBan(tChannel, hostmask);
+            }
+        }
+    }
+    
+    /**
+     * Sets the specified mode on the specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void mode(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            String channel = params[0];
+            String mode = params[1];
+            Channel tChannel = bot.getChannel(channel);
+            
+            if (!isUserInChannel(tChannel, bot.getNick())) {
+                informUser(user, bot.getNick() + " is not in " + channel + ".");
+            } else if (!tChannel.isOp(bot.getUserBot())) {
+                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
+            } else {
+                bot.setMode(tChannel, mode);
             }
         }
     }
@@ -803,7 +829,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     public void commands(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, coin, hi, help, commands");
         if (isAdmin(user)){
-            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, kick, ban, unban, nick, addadmin, removeadmin, listadmins, addclone, removeclone, removeallclones, listclones");
+            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, kick, ban, unban, mode, " +
+                             "nick, addadmin, removeadmin, listadmins, addclone, removeclone, removeallclones, listclones");
         }
     }
             
