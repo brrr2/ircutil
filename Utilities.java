@@ -140,6 +140,10 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             voice(user, params, msg);
         } else if (command.equalsIgnoreCase("devoice")) {
             devoice(user, params, msg);
+        } else if (command.equalsIgnoreCase("quiet")) {
+            quiet(user, params, msg);
+        } else if (command.equalsIgnoreCase("unquiet")) {
+            unquiet(user, params, msg);
         } else if (command.equalsIgnoreCase("kick")) {
             kick(user, params, msg);
         } else if (command.equalsIgnoreCase("ban")) {
@@ -154,7 +158,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             removeadmin(user, params, msg);
         } else if (command.equalsIgnoreCase("listadmins")) {
             listadmins(user, params, msg);
-        } else if (command.equalsIgnoreCase("msg") || command.equalsIgnoreCase("say")){
+        } else if (command.equalsIgnoreCase("msg")){
             msg(user, params, msg);
         } else if (command.equalsIgnoreCase("notice")) {
             notice(user, params, msg);
@@ -259,20 +263,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String nick = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            User tUser = bot.getUser(nick);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else if (!isUserInChannel(tChannel, nick)){
-                informUser(user, nick + " is not in " + channel + ".");
-            } else {
-                bot.op(tChannel, tUser);
-            }
+            mode(user, new String[] {params[0], "+o " + params[1]}, msg);
         }
     }
     
@@ -286,20 +277,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String nick = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            User tUser = bot.getUser(nick);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else if (!isUserInChannel(tChannel, nick)){
-                informUser(user, nick + " is not in " + channel + ".");
-            } else {
-                bot.deOp(tChannel, tUser);
-            }
+            mode(user, new String[] {params[0], "-o " + params[1]}, msg);
         }
     }
     
@@ -313,20 +291,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String nick = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            User tUser = bot.getUser(nick);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else if (!isUserInChannel(tChannel, nick)){
-                informUser(user, nick + " is not in " + channel + ".");
-            } else {
-                bot.voice(tChannel, tUser);
-            }
+            mode(user, new String[] {params[0], "+v " + params[1]}, msg);
         }
     }
     
@@ -340,20 +305,35 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String nick = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            User tUser = bot.getUser(nick);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else if (!isUserInChannel(tChannel, nick)){
-                informUser(user, nick + " is not in " + channel + ".");
-            } else {
-                bot.deVoice(tChannel, tUser);
-            }
+            mode(user, new String[] {params[0], "-v " + params[1]}, msg);
+        }
+    }
+    
+    /**
+     * Quiets a user in a specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void quiet(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            mode(user, new String[] {params[0], "+q " + params[1]}, msg);
+        }
+    }
+    
+    /**
+     * Unquiets a user in a specified channel.
+     * @param user
+     * @param params
+     * @param msg 
+     */
+    public void unquiet(User user, String[] params, String msg) {
+        if (params.length < 2) {
+            informUser(user, "Missing parameter(s).");
+        } else {
+            mode(user, new String[] {params[0], "-q " + params[1]}, msg);
         }
     }
     
@@ -398,17 +378,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String hostmask = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                bot.ban(tChannel, hostmask);
-            }
+            mode(user, new String[] {params[0], "+b " + params[1]}, msg);
         }
     }
     
@@ -422,17 +392,7 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         if (params.length < 2){
             informUser(user, "Missing parameter(s).");
         } else {
-            String channel = params[0];
-            String hostmask = params[1];
-            Channel tChannel = bot.getChannel(channel);
-            
-            if (!isUserInChannel(tChannel, bot.getNick())) {
-                informUser(user, bot.getNick() + " is not in " + channel + ".");
-            } else if (!tChannel.isOp(bot.getUserBot())){
-                informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
-                bot.unBan(tChannel, hostmask);
-            }
+            mode(user, new String[] {params[0], "-b " + params[1]}, msg);
         }
     }
     
@@ -449,13 +409,15 @@ public class Utilities extends ListenerAdapter<PircBotX>{
             String channel = params[0];
             String mode = params[1];
             Channel tChannel = bot.getChannel(channel);
-            
             if (!isUserInChannel(tChannel, bot.getNick())) {
                 informUser(user, bot.getNick() + " is not in " + channel + ".");
             } else if (!tChannel.isOp(bot.getUserBot())) {
                 informUser(user, bot.getNick() + " is not authorized to do this in " + channel + ".");
-            } else {
+            } else if (params.length == 2) {
                 bot.setMode(tChannel, mode);
+            } else {
+                String modeTargets = msg.substring(msg.indexOf(mode) + mode.length());
+                bot.setMode(tChannel, mode + modeTargets);
             }
         }
     }
@@ -829,8 +791,9 @@ public class Utilities extends ListenerAdapter<PircBotX>{
     public void commands(Channel channel, User user, String[] params, String msg) {
         bot.sendMessage(channel, "Commands: channels, time, uptime, lag, cocoa, stoke, coin, hi, help, commands");
         if (isAdmin(user)){
-            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, voice, devoice, kick, ban, unban, mode, " +
-                             "nick, addadmin, removeadmin, listadmins, addclone, removeclone, removeallclones, listclones");
+            informUser(user, "Admin Commands: msg, notice, action, raw, join, part, op, deop, " +
+                             "voice, devoice, quiet, unquiet, kick, ban, unban, mode, nick, " +
+                             "addadmin, removeadmin, listadmins, addclone, removeclone, removeallclones, listclones");
         }
     }
             
