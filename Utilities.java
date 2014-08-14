@@ -434,16 +434,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String nick = params[0];
             // Find if user to add is in any of the channels the bot is in
-            User tUser;
-            Iterator<Channel> it = bot.getChannels().iterator();
-            Iterator<User> it2;
-            while(it.hasNext()){
-                it2 = it.next().getUsers().iterator();
-                while(it2.hasNext()){
-                    tUser = it2.next();
+            for (Channel c : bot.getChannels()) {
+                for (User u : c.getUsers()) {
                     // If we find the user, we can add them to the admin list
-                    if (tUser.getNick().equalsIgnoreCase(nick)){
-                        adminList.add(tUser.getHostmask());
+                    if (u.getNick().equalsIgnoreCase(nick)){
+                        adminList.add(u.getHostmask());
                         saveHostList("admins.txt", adminList);
                         return;
                     }
@@ -467,16 +462,11 @@ public class Utilities extends ListenerAdapter<PircBotX>{
         } else {
             String nick = params[0];
             // Find if user to remove is in any of the channels the bot is in
-            User tUser;
-            Iterator<Channel> it = bot.getChannels().iterator();
-            Iterator<User> it2;
-            while(it.hasNext()){
-                it2 = it.next().getUsers().iterator();
-                while(it2.hasNext()){
-                    tUser = it2.next();
+            for (Channel c : bot.getChannels()) {
+                for (User u : c.getUsers()) {
                     // If we find the user, we can remove them from the admin list
-                    if (tUser.getNick().equalsIgnoreCase(nick)){
-                        adminList.remove(tUser.getHostmask());
+                    if (u.getNick().equalsIgnoreCase(nick)){
+                        adminList.remove(u.getHostmask());
                         saveHostList("admins.txt", adminList);
                         return;
                     }
@@ -703,9 +693,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      */
     public void channels(Channel channel, User user, String[] params, String msg) {
         String outStr = "Channels: ";
-        Iterator<Channel> it = bot.getChannels().iterator();
-        while(it.hasNext()){
-            outStr += it.next().getName() + ", ";
+        for (Channel c : bot.getChannels()) {
+            outStr += c.getName() + ", ";
         }
         bot.sendMessage(channel, outStr.substring(0, outStr.length()-2));
     }
@@ -818,9 +807,8 @@ public class Utilities extends ListenerAdapter<PircBotX>{
      * @return true if the user is found in the channel
      */
     private boolean isUserInChannel(Channel channel, String nick){
-        Iterator<User> it = channel.getUsers().iterator();
-        while(it.hasNext()){
-            if (it.next().getNick().equalsIgnoreCase(nick)){
+        for (User u : channel.getUsers()) {
+            if (u.getNick().equalsIgnoreCase(nick)){
                 return true;
             }
         }
